@@ -39,6 +39,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'rest_framework',
     'modules.cookbook.ingredients',
+    'modules.cookbook.recipe',
 ]
 
 MIDDLEWARE = [

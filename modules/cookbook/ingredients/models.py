@@ -5,7 +5,7 @@ class Ingredient(models.Model):
 
     def save(self, *args, **kwargs):
         self.name = self.name.strip().lower()
-        if not self.name:  # Falls name nach Strip leer ist
+        if not self.name:
             raise ValueError("Ingredient name cannot be empty")
         super().save(*args, **kwargs)
 

@@ -15,6 +15,12 @@ class Recipe(models.Model):
     author = models.ForeignKey(get_user_model(), on_delete=models.CASCADE)  # User-Verknüpfung
     ingredients = models.ManyToManyField(Ingredient, through="RecipeIngredient")  # Many-to-Many mit Zwischentabelle
 
+    def save(self, *args, **kwargs):
+        self.name = self.name.strip().lower()
+        if not self.name:
+            raise ValueError("Recipe name cannot be empty")
+        super().save(*args, **kwargs)
+
     def __str__(self):
         return self.name
 

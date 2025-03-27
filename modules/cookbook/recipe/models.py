@@ -1,6 +1,6 @@
 from django.db import models
 from django.contrib.auth import get_user_model
-from modules.cookbook.ingredients.models import Ingredient 
+from modules.cookbook.recipe_ingredients.models import RecipeIngredient
 class Recipe(models.Model):
     DIFFICULTY_CHOICES = [
         ("easy", "Einfach"),
@@ -9,29 +9,15 @@ class Recipe(models.Model):
     ]
 
     name = models.CharField(max_length=255)
-    instructions = models.TextField()  # Zubereitung
+    instructions = models.TextField()
     preparation_time = models.PositiveIntegerField(help_text="Preparation time in minutes")
     difficulty = models.CharField(max_length=10, choices=DIFFICULTY_CHOICES)
-    author = models.ForeignKey(get_user_model(), on_delete=models.CASCADE)  # User-Verknüpfung
-    ingredients = models.ManyToManyField(Ingredient, through="RecipeIngredient")  # Many-to-Many mit Zwischentabelle
+    author = models.ForeignKey(get_user_model(), on_delete=models.CASCADE)
+    ingredients = models.ManyToManyField(RecipeIngredient)
 
     def save(self, *args, **kwargs):
         self.name = self.name.strip().lower()
-        if not self.name:
-            raise ValueError("Recipe name cannot be empty")
         super().save(*args, **kwargs)
 
     def __str__(self):
-        return self.name
-
-
-class RecipeIngredient(models.Model):
-    recipe = models.ForeignKey(Recipe, on_delete=models.CASCADE)
-    ingredient = models.ForeignKey(Ingredient, on_delete=models.CASCADE)
-    amount = models.CharField(max_length=50)
-
-    class Meta:
-        unique_together = ("recipe", "ingredient")
-
-    def __str__(self):
-        return f"{self.amount} {self.ingredient.name} für {self.recipe.name}"   
+        return self.name.capitalize()

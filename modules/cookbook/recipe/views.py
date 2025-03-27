@@ -8,4 +8,4 @@ class RecipeViewSet(ModelViewSet):
 
     def perform_create(self, serializer):
         name = serializer.validated_data["name"].strip().lower()
-        serializer.save(name=name)
+        serializer.save(name=name, author=self.request.user)

@@ -1,6 +1,8 @@
 from django.db import models
 from django.contrib.auth import get_user_model
 from modules.cookbook.recipe_ingredients.models import RecipeIngredient
+from django_resized import ResizedImageField
+
 class Recipe(models.Model):
     DIFFICULTY_CHOICES = [
         ("easy", "Einfach"),

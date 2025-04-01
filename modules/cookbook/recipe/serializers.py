@@ -23,11 +23,13 @@ class RecipeSerializer(serializers.ModelSerializer):
         recipe_ingredients = []
         for ingredient_data in ingredients_data:
             ingredient_name = ingredient_data["ingredient"].strip().lower()
+            ingredient_unit = ingredient_data["unit"].strip()
             ingredient, created = Ingredient.objects.get_or_create(name=ingredient_name)
 
             recipe_ingredient, _ = RecipeIngredient.objects.get_or_create(
                 ingredient=ingredient, 
-                amount=ingredient_data["amount"]
+                amount=ingredient_data["amount"],
+                unit=ingredient_unit
             )
             recipe_ingredients.append(recipe_ingredient)
         

@@ -41,6 +41,7 @@ INSTALLED_APPS = [
     'modules.cookbook.ingredients',
     'modules.cookbook.recipe_ingredients',
     'modules.cookbook.recipe',
+    'modules.shoppinglists.shoppinglistitem',
 ]
 
 MIDDLEWARE = [

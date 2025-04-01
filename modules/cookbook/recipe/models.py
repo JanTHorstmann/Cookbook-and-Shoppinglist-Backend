@@ -16,6 +16,12 @@ class Recipe(models.Model):
     difficulty = models.CharField(max_length=10, choices=DIFFICULTY_CHOICES)
     author = models.ForeignKey(get_user_model(), on_delete=models.CASCADE)
     ingredients = models.ManyToManyField(RecipeIngredient)
+    recipe_img = ResizedImageField(size=[500, 300],
+        upload_to="images/recipes/",
+        force_format="JPEG",  # oder "PNG"
+        blank=True,
+        null=True
+    )
 
     def save(self, *args, **kwargs):
         self.name = self.name.strip().lower()

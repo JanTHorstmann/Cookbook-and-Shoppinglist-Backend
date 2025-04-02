@@ -22,7 +22,7 @@ class RecipeIngredientTestCase(TestCase):
 
     def test_recipe_ingredient_str(self):
         """Checks whether __str__() is formatted correctly."""
-        self.assertEqual(str(self.recipe_ingredient), "1.00 Ei")
+        self.assertEqual(str(self.recipe_ingredient), "1.00 Stück Ei")
 
     def test_recipe_ingredient_unique_together(self):
         """Ensures that ingredient + amount is unique."""

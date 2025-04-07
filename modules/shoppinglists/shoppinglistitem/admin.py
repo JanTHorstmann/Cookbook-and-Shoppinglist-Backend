@@ -1,3 +1,7 @@
 from django.contrib import admin
+from .models import ShoppingListItem
 
-# Register your models here.
+class ShoppingListItemAdmin(admin.ModelAdmin):
+    fields = ["id", "ingredient", "amount", "unit"]
+
+admin.site.register(ShoppingListItem)

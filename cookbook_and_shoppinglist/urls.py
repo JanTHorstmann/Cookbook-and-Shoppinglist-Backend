@@ -21,4 +21,5 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     path('api/', include('modules.cookbook.ingredients.urls')),
     path('api/', include('modules.cookbook.recipe.urls')),
+    path('api/', include('modules.shoppinglists.shoppinglistitem.urls')),
 ]

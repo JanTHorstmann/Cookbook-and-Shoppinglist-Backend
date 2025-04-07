@@ -6,6 +6,7 @@ class ShoppingListItemSerializer(serializers.ModelSerializer):
     ingredient = serializers.CharField()
 
     class Meta:
+        model = ShoppingListItem
         fields = ["ingredient", "amount", "unit"]
 
     def create(self, validated_data):

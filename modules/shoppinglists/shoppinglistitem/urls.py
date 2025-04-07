@@ -3,7 +3,7 @@ from .views import ShoppingListItemViewSet
 from rest_framework.routers import DefaultRouter
 
 router = DefaultRouter()
-router.register(r'shoppingliistitem', ShoppingListItemViewSet, basename='shoppingliistitem')
+router.register(r'shoppinglistitem', ShoppingListItemViewSet, basename='shoppinglistitem')
 
 urlpatterns = [
     path('', include(router.urls)),

@@ -38,6 +38,8 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'rest_framework',
+    'auth.login',
+    'auth.registration',
     'modules.cookbook.ingredients',
     'modules.cookbook.recipe_ingredients',
     'modules.cookbook.recipe',

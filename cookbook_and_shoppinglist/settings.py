@@ -40,6 +40,7 @@ INSTALLED_APPS = [
     'rest_framework',
     'auth.login',
     'auth.registration',
+    'modules.custom_user',
     'modules.cookbook.ingredients',
     'modules.cookbook.recipe_ingredients',
     'modules.cookbook.recipe',
@@ -135,3 +136,5 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 MEDIA_URL = "/media/"
 MEDIA_ROOT = os.path.join(BASE_DIR, "media")
+
+AUTH_USER_MODEL = "modules.custom_user.CustomUser"

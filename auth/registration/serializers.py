@@ -8,6 +8,7 @@ from django.utils.encoding import force_bytes
 from django.urls import reverse
 from django.conf import settings
 from decouple import config
+from .utils import account_activation_token
 import django.contrib.auth.password_validation as validators
 
 User = get_user_model()
@@ -47,15 +48,12 @@ class RegisterSerializer(serializers.Serializer):
         return user
 
     def send_confirmation_email(self, user):
-        token = default_token_generator.make_token(user)
-        uid = user.pk  # oder mit base64 kodieren, wenn du willst
+        uid = urlsafe_base64_encode(force_bytes(user.pk))
+        token = account_activation_token.make_token(user)
+        
+        activation_link = f"{config('FRONTEND_URL')}/api/registration/confirm-email/{uid}/{token}/"
+        
+        subject = "Confirm your email address"
+        message = f"Hi {user.email},\n\nClick the link below to activate your account:\n{activation_link}"
 
-        confirmation_url = f"{config('FRONTEND_URL')}/confirm-email/{uid}/{token}/"
-
-        send_mail(
-            subject="Confirm your email",
-            message=f"Please confirm your email by clicking the following link:\n\n{confirmation_url}",
-            from_email=config('DEFAULT_FROM_EMAIL'),
-            recipient_list=[user.email],
-            fail_silently=False,
-        )
+        send_mail(subject, message, config('DEFAULT_FROM_EMAIL'), [user.email])

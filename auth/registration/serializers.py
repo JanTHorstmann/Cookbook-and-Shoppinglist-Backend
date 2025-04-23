@@ -18,7 +18,6 @@ User = get_user_model()
 class RegisterSerializer(serializers.Serializer):
     email = serializers.EmailField()
     password = serializers.CharField(write_only=True)
-    is_superuser = serializers.BooleanField(default=False)
 
     def validate_email(self, value):
         if User.objects.filter(email=value).exists():
@@ -41,9 +40,6 @@ class RegisterSerializer(serializers.Serializer):
             email=validated_data["email"],
             password=validated_data["password"],
         )
-        if validated_data.get("is_superuser"):
-            user.is_superuser = True
-            user.is_staff = True
 
         user.save()
         self.send_confirmation_email(user)

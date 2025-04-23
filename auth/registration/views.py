@@ -1,7 +1,6 @@
 from django.shortcuts import render
 from rest_framework.viewsets import ModelViewSet
 from rest_framework.views import APIView
-from django.contrib.auth.models import User
 from rest_framework.response import Response
 from .serializers import RegisterSerializer
 from rest_framework import status
@@ -9,7 +8,8 @@ from rest_framework import status
 from django.contrib.auth import get_user_model
 from django.contrib.auth.tokens import default_token_generator
 
-class RegiserViewSet(ModelViewSet):
+User = get_user_model()
+class RegisterViewSet(ModelViewSet):
     queryset = User.objects.all()
     serializer_class = RegisterSerializer
 
@@ -20,7 +20,6 @@ class RegiserViewSet(ModelViewSet):
             return Response({"message": "User created. Please check your email."}, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
     
-User = get_user_model()
 
 class ConfirmEmailView(APIView):
     def get(self, request, uid, token):

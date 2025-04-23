@@ -10,6 +10,8 @@ from django.conf import settings
 from decouple import config
 from .utils import account_activation_token
 import django.contrib.auth.password_validation as validators
+from django.template.loader import render_to_string
+from django.core.mail import EmailMultiAlternatives
 
 User = get_user_model()
 
@@ -50,10 +52,25 @@ class RegisterSerializer(serializers.Serializer):
     def send_confirmation_email(self, user):
         uid = urlsafe_base64_encode(force_bytes(user.pk))
         token = account_activation_token.make_token(user)
-        
-        activation_link = f"{config('FRONTEND_URL')}/api/registration/confirm-email/{uid}/{token}/"
-        
-        subject = "Confirm your email address"
-        message = f"Hi {user.email},\n\nClick the link below to activate your account:\n{activation_link}"
 
-        send_mail(subject, message, config('DEFAULT_FROM_EMAIL'), [user.email])
+        confirmation_url = f"{config('FRONTEND_URL')}/api/registration/confirm-email/{uid}/{token}/"
+
+        subject = "Confirm your email address"
+        user_name = user.email.split("@")[0].capitalize()
+    
+        html_message = render_to_string("email_confirmation.html", {
+            "user_name": user_name,
+            "confirmation_url": confirmation_url
+        })
+
+        # Nur für Fallback-Text-E-Mail (optional)
+        text_message = f"Hi {user_name},\n\nClick the link to activate your account:\n{confirmation_url}"
+
+        email = EmailMultiAlternatives(
+            subject=subject,
+            body=text_message,
+            from_email=config("DEFAULT_FROM_EMAIL"),
+            to=[user.email],
+        )
+        email.attach_alternative(html_message, "text/html")
+        email.send()

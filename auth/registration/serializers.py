@@ -36,13 +36,17 @@ class RegisterSerializer(serializers.Serializer):
         return data
 
     def create(self, validated_data):
-        user = User.objects.create_user(
+        user = User(
             email=validated_data["email"],
-            password=validated_data["password"],
         )
+        user.set_password(validated_data["password"])
+
+        try:
+            self.send_confirmation_email(user)
+        except Exception as e:
+            raise serializers.ValidationError("There was a problem sending the confirmation email. Please try again later.")
 
         user.save()
-        self.send_confirmation_email(user)
         return user
 
     def send_confirmation_email(self, user):

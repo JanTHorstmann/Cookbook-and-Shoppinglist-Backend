@@ -7,6 +7,9 @@ from django.db.utils import IntegrityError
 
 class RecipeTestCase(TestCase):
     def setUp(self):
+        """
+        Set up a user, an ingredient, a recipe ingredient, and a recipe for testing.
+        """
         user = get_user_model().objects.create_user(
             email="testuser@example.com",
             username="testuser",
@@ -29,6 +32,9 @@ class RecipeTestCase(TestCase):
         recipe.ingredients.add(self.recipe_ingredient)
 
     def test_recipe_creation(self):
+        """
+        Test that a recipe is correctly created with the expected attributes.
+        """
         recipe = Recipe.objects.get(name="spiegelei")
         self.assertEqual(recipe.name, "spiegelei")
         self.assertEqual(recipe.instructions, "Ei in die Pfanne geben und solange an braten bis das Eiweiß geronnen ist")
@@ -37,10 +43,16 @@ class RecipeTestCase(TestCase):
         self.assertTrue(recipe.ingredients.count(), 1)
 
     def test_recipe_str_method(self):
+        """
+        Verify that the string representation of a recipe capitalizes the first letter.
+        """
         recipe = Recipe.objects.get(name="spiegelei")
         self.assertEqual(str(recipe), "Spiegelei")
 
     def test_recipe_creation_without_required_fields(self):
+        """
+        Ensure that creating a recipe without required fields raises an IntegrityError.
+        """
         with self.assertRaises(IntegrityError):
             Recipe.objects.create(
                 name="",
@@ -51,10 +63,16 @@ class RecipeTestCase(TestCase):
             )
 
     def test_recipe_has_correct_ingredient(self):
+        """
+        Verify that the created recipe includes the correct recipe ingredient.
+        """
         recipe = Recipe.objects.get(name="spiegelei")
         self.assertIn(self.recipe_ingredient, recipe.ingredients.all())
 
     def test_recipe_deletion(self):
+        """
+        Test that deleting a recipe removes it from the database.
+        """
         recipe = Recipe.objects.get(name="spiegelei")
         recipe.delete()
         self.assertFalse(Recipe.objects.filter(name="spiegelei").exists())

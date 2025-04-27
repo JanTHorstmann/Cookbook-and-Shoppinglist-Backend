@@ -7,21 +7,18 @@ from django.db.utils import IntegrityError
 
 class RecipeTestCase(TestCase):
     def setUp(self):
-        # Zuerst ein User erstellen
         user = get_user_model().objects.create_user(
             email="testuser@example.com",
             username="testuser",
             password="password"
         )
         
-        # Zutat erstellen
         self.ingredient = Ingredient.objects.create(name="Ei")
         self.recipe_ingredient = RecipeIngredient.objects.create(
             ingredient=self.ingredient, 
             amount="1 Stück"
         )
 
-        # Rezept erstellen und Zutat zuweisen
         recipe = Recipe.objects.create(
             name="Spiegelei",
             instructions="Ei in die Pfanne geben und solange an braten bis das Eiweiß geronnen ist",

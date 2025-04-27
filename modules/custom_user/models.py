@@ -5,7 +5,9 @@ class CustomUserManager(BaseUserManager):
     def create_user(self, email, password=None, **extra_fields):
         if not email:
             raise ValueError("E-mail address is required.")
-        email = self.normalize_email(email)
+        if password is None:
+            raise ValueError("Password is required.")
+        email = self.normalize_email(email).lower()
         user = self.model(email=email, **extra_fields)
         user.set_password(password)
         user.save(using=self._db)
@@ -31,6 +33,11 @@ class CustomUser(AbstractBaseUser, PermissionsMixin):
     REQUIRED_FIELDS = []
 
     objects = CustomUserManager()
+
+    def save(self, *args, **kwargs):
+        if self.email:
+            self.email = self.email.strip().lower()
+        super().save(*args, **kwargs)
 
     def __str__(self):
         return self.email

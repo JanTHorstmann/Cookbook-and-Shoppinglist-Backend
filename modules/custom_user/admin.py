@@ -9,7 +9,7 @@ class CustomUserAdmin(BaseUserAdmin):
     model = CustomUser
 
     # Nur email als Benutzername
-    list_display = ('email', 'is_staff', 'is_superuser')
+    list_display = ('email', 'is_active', 'is_superuser')
     ordering = ('email',)
     search_fields = ('email',)
 

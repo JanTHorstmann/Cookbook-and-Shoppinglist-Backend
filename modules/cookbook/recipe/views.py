@@ -3,7 +3,10 @@ from rest_framework.viewsets import ModelViewSet
 from rest_framework.status import HTTP_204_NO_CONTENT
 from .models import Recipe
 from .serializers import RecipeSerializer
+from rest_framework.permissions import IsAuthenticated
+
 class RecipeViewSet(ModelViewSet):
+    permission_classes = [IsAuthenticated]
     queryset = Recipe.objects.all()
     serializer_class = RecipeSerializer
 

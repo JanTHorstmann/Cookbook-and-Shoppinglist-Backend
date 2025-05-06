@@ -5,6 +5,7 @@ from rest_framework.response import Response
 from rest_framework_simplejwt.tokens import RefreshToken
 from django.contrib.auth import get_user_model, authenticate
 from .serializers import LoginSerializer
+from rest_framework.permissions import IsAuthenticated
 
 User = get_user_model()
 
@@ -26,3 +27,8 @@ class LoginView(APIView):
             else:
                 return Response({'detail': 'Invalid credentials'}, status=status.HTTP_401_UNAUTHORIZED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    
+class ProtectedTestView(APIView):
+    permission_classes = [IsAuthenticated]
+    def get(self, request):
+        return Response({"message": f"Hello, {request.user.email.split('@')[0].capitalize()}!"})

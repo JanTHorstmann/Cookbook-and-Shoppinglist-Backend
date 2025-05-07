@@ -49,12 +49,22 @@ INSTALLED_APPS = [
     'modules.shoppinglists.shoppinglistitem',
 ]
 
+INSTALLED_APPS += [
+    "axes",
+]
+
+AUTHENTICATION_BACKENDS = [
+    "axes.backends.AxesBackend",
+    "django.contrib.auth.backends.ModelBackend",
+]
+
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
+    "axes.middleware.AxesMiddleware",
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
@@ -164,3 +174,10 @@ REST_FRAMEWORK = {
         'rest_framework_simplejwt.authentication.JWTAuthentication',
     )
 }
+
+AXES_FAILURE_LIMIT = 5                      # Max. Fehlversuche
+AXES_COOLOFF_TIME = timedelta(minutes=30)   # Sperrdauer
+AXES_LOCKOUT_TEMPLATE = None                # Für APIs: kein HTML-Template
+AXES_ONLY_USER_FAILURES = True              # IPs werden nicht blockiert
+AXES_RESET_ON_SUCCESS = True                # Erfolgreiches Login setzt Zähler zurück
+# AXES_DISABLE_ADMIN = True                   # Admin-Login von Axes ausnehmen

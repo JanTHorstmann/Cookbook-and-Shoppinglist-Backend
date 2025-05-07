@@ -42,6 +42,7 @@ INSTALLED_APPS = [
     'rest_framework',
     'auth.login',
     'auth.registration',
+    'auth.reset_password',
     'modules.custom_user',
     'modules.cookbook.ingredients',
     'modules.cookbook.recipe_ingredients',

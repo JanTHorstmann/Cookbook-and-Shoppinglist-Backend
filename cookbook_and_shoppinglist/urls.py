@@ -24,4 +24,5 @@ urlpatterns = [
     path('api/', include('modules.shoppinglists.shoppinglistitem.urls')),
     path('api/', include('auth.registration.urls')),
     path('api/', include('auth.login.urls')),
+    path('api/', include('auth.reset_password.urls')),
 ]

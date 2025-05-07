@@ -48,7 +48,7 @@ class LoginView(APIView):
         uid = urlsafe_base64_encode(force_bytes(user.pk))
         token = default_token_generator.make_token(user)
 
-        reset_url = f"{config('FRONTEND_URL')}/api/login/reset-password-brute-force/{uid}/{token}/"
+        reset_url = f"{config('FRONTEND_URL')}/reset-password-brute-force/{uid}/{token}/"
         subject = "Too many login attempts - Reset your password"
         user_name = user.email.split("@")[0].capitalize()
     

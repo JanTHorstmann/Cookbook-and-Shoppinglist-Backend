@@ -39,9 +39,9 @@ class SendResetPasswordMailView(APIView):
             user = User.objects.get(email=email)
             if user is not None:
                 self.send_reset_password_link(user)
-                return Response({'detail': 'Send e-mail succesful'}, status=status.HTTP_200_OK)
             else:
-                return Response({'detail': 'User does not exist'}, status=status.HTTP_400_BAD_REQUEST)
+                pass
+            return Response({'detail': 'Send e-mail succesful'}, status=status.HTTP_200_OK)
         else:
             return Response({'detail': 'No valid email'}, status=status.HTTP_400_BAD_REQUEST)
         

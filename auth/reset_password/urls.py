@@ -1,6 +1,7 @@
 from django.urls import path
-from .views import ResetPasswordBruteForceView
+from .views import ResetPasswordView, SendResetPasswordMailView
 
 urlpatterns = [
-    path("resetpasswords/bruteforce/<uidb64>/<token>/", ResetPasswordBruteForceView.as_view(), name="resetpasswords"),
+    path("resetpasswords/<uidb64>/<token>/", ResetPasswordView.as_view(), name="resetpasswordsbruteforce"),
+    path("sendresetpasswordmail/", SendResetPasswordMailView.as_view(), name="sendresetpasswordmail"),
 ]

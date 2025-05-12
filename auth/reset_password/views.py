@@ -4,10 +4,11 @@ from django.contrib.auth.tokens import default_token_generator
 from django.contrib.auth import get_user_model
 from django.template.loader import render_to_string
 from django.core.mail import EmailMultiAlternatives
+from rest_framework import status
 from rest_framework.views import APIView
 from rest_framework.response import Response
-from rest_framework import status
-from .serializers import ResetPasswordSerializer, SendResetPasswordMailSerializer
+from rest_framework.permissions import IsAuthenticated
+from .serializers import ResetPasswordSerializer, SendResetPasswordMailSerializer, ResetPasswordIfLoggedInSerializer
 from axes.utils import reset
 from decouple import config
 
@@ -68,3 +69,18 @@ class SendResetPasswordMailView(APIView):
         )
         email.attach_alternative(html_message, "text/html")
         email.send()
+
+class ResetPasswordIfLoggedInView(APIView):
+    permission_classes = [IsAuthenticated]
+    
+    def post(self, request):
+        serializer = ResetPasswordIfLoggedInSerializer(data=request.data)
+        if serializer.is_valid():
+            user = request.user
+            if not user.check_password(serializer.validated_data['password_old']):
+                return Response({'detail': 'Old password is incorrect'}, status=status.HTTP_400_BAD_REQUEST)
+            user.set_password(serializer.validated_data['password_new'])
+            user.save()
+            return Response({'detail': 'Password reset successful'}, status=status.HTTP_200_OK)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+            

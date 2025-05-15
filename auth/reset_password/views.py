@@ -81,6 +81,31 @@ class ResetPasswordIfLoggedInView(APIView):
                 return Response({'detail': 'Old password is incorrect'}, status=status.HTTP_400_BAD_REQUEST)
             user.set_password(serializer.validated_data['password_new'])
             user.save()
+            self.send_confirmation_email(user)
             return Response({'detail': 'Password reset successful'}, status=status.HTTP_200_OK)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    
+    def send_confirmation_email(self, user):
+        uid = urlsafe_base64_encode(force_bytes(user.pk))
+        token = default_token_generator.make_token(user)
+
+        reset_url = f"{config('FRONTEND_URL')}/forget-password-reset/{uid}/{token}/"
+        subject = "Password successfully changed"
+        user_name = user.email.split("@")[0].capitalize()
+    
+        html_message = render_to_string("email_reset_password_confirmation.html", {
+            "user_name": user_name,
+            "reset_url": reset_url
+        })
+        
+        text_message = f"Hi {user_name}, \n\nYour password has been successfully changed. \n\nIf you have not changed your password, please change it immediately using the following link : \n\n{reset_url}"
+
+        email = EmailMultiAlternatives(
+            subject=subject,
+            body=text_message,
+            from_email=config("DEFAULT_FROM_EMAIL"),
+            to=[user.email],
+        )
+        email.attach_alternative(html_message, "text/html")
+        email.send()
             

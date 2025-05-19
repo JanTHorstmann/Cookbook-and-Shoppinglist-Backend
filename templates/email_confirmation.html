@@ -21,7 +21,7 @@
             text-align: center;
         }
         .logo img {
-            height: 40px;
+            height: 135px;
             margin-bottom: 20px;
         }
         .content {
@@ -37,12 +37,13 @@
             color: #2E3EDF;
         }
         .button {
+            margin: 10px 0;
             display: inline-block;
             padding: 10px 24px;
             font-size: 18px;
             font-weight: bold;
             color: #ffffff !important;
-            background-color: #2E3EDF;
+            background-color: #b47d50;
             text-decoration: none;
             border-radius: 40px;
             text-align: center;
@@ -57,14 +58,14 @@
 <body>
     <div class="container">
         <div class="logo">
-            <img src="https://www.jan-horstmann.developerakademie.net/videoflix_logo.png" alt="recipe_and_shopping Logo">
+            <img src="https://www.recipe-and-shopping.jan-horstmann.eu/recipe_and_shopping_logo.png" alt="recipe_and_shopping Logo">
         </div>
         <div class="content">
             <p>Dear {{ user_name }},</p>
-            <p>Thank you for registering with <a href="http://localhost:4200/login">Recipe and Shoppinglist</a>. To complete your registration and verify your email address, please click the link below:</p>
+            <p>Thank you for registering with <a href="http://localhost:4200/login">Recipe and Shoppinglist</a>. To complete your registration and verify your email address, please click the link below:</p>            
             <p>
                 <a href="{{ confirmation_url }}" class="button">Activate account</a>
-            </p>
+            </p>            
             <p>If you did not create an account with us, please disregard this email.</p>
             <p>Best regards,</p>
             <p>Your Recipe and Shoppinglist Team.</p>

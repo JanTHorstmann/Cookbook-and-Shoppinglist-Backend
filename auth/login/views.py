@@ -13,6 +13,7 @@ from django.core.mail import EmailMultiAlternatives
 from .serializers import LoginSerializer
 from decouple import config
 from axes.handlers.proxy import AxesProxyHandler
+from axes.utils import reset
 
 User = get_user_model()
 
@@ -25,23 +26,32 @@ class LoginView(APIView):
             if AxesProxyHandler.is_locked(request) or AxesProxyHandler.is_locked(request, credentials={"email": email}):
 
                 user = User.objects.get(email=email)
-                self.send_reset_password_link(user)
+                if user and not user.lockout_email_sent:
+                    self.send_reset_password_link(user)
+                    user.lockout_email_sent = True
+                    user.save()
 
                 return Response(
-                    {"detail": "Too many failed login attempts. Please try again in 30 minutes."},
+                    {"detail": "Too many failed login attempts. Please check your emails"},
                     status=status.HTTP_403_FORBIDDEN
                 )
             user = authenticate(request=request, email=email, password=password)
             if user is not None:
-                if not user.is_active:
-                    return Response({'detail': 'Email is not confirmed'}, status=status.HTTP_401_UNAUTHORIZED)
+                reset(username=user.email)
                 refresh = RefreshToken.for_user(user)
+                user.lockout_email_sent = False
+                user.save()
                 return Response({
                     'refresh': str(refresh),
                     'access': str(refresh.access_token),
                 })
-            else:
+            else:    
+                user = User.objects.filter(email=email).first()
+                if user and user.check_password(password):
+                    if not user.is_active:
+                        return Response({'detail': 'Email is not confirmed'}, status=status.HTTP_401_UNAUTHORIZED)      
                 return Response({'detail': 'E-mail or password is incorrect'}, status=status.HTTP_401_UNAUTHORIZED)
+            
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
     
     def send_reset_password_link(self, user):

@@ -179,6 +179,6 @@ REST_FRAMEWORK = {
 AXES_FAILURE_LIMIT = 10                      # Max. Fehlversuche
 AXES_COOLOFF_TIME = None                    # Account bleibt dauerhaft gesperrt, bis manuell entsperrt oder Passwort zurückgesetzt
 AXES_LOCKOUT_TEMPLATE = None                # Für APIs: kein HTML-Template
-AXES_ONLY_USER_FAILURES = True              # IPs werden nicht blockiert
+# AXES_ONLY_USER_FAILURES = True              # IPs werden nicht blockiert
 AXES_RESET_ON_SUCCESS = True                # Erfolgreiches Login setzt Zähler zurück
 # AXES_DISABLE_ADMIN = True                   # Admin-Login von Axes ausnehmen

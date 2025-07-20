@@ -68,7 +68,6 @@ class RegistrationTests(APITestCase):
         """Test that a confirmation email is sent after registration."""
         data = {
             "email": "confirm@example.com",
-            "username": "confirmuser",
             "password": "SecurePass123!"
         }
         response = self.client.post(self.url, data)

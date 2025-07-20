@@ -11,6 +11,7 @@ from rest_framework.permissions import IsAuthenticated
 from .serializers import ResetPasswordSerializer, SendResetPasswordMailSerializer, ResetPasswordIfLoggedInSerializer
 from axes.utils import reset
 from decouple import config
+from auth.registration.utils import account_activation_token
 
 User = get_user_model()
 class ResetPasswordView(APIView):
@@ -39,7 +40,10 @@ class SendResetPasswordMailView(APIView):
             email = serializer.validated_data['email'].lower()
             user = User.objects.get(email=email)
             if user is not None:
-                self.send_reset_password_link(user)
+                if user.is_active:
+                    self.send_reset_password_link(user)
+                else:
+                    return Response({'detail': 'Account is not yet confirmed - confirmation email sent again'}, status=status.HTTP_200_OK)
             else:
                 pass
             return Response({'detail': 'Send e-mail succesful'}, status=status.HTTP_200_OK)
@@ -60,6 +64,32 @@ class SendResetPasswordMailView(APIView):
         })
 
         text_message = f"Hi {user_name},\n\nClick the link to reset your password:\n{reset_url}"
+
+        email = EmailMultiAlternatives(
+            subject=subject,
+            body=text_message,
+            from_email=config("DEFAULT_FROM_EMAIL"),
+            to=[user.email],
+        )
+        email.attach_alternative(html_message, "text/html")
+        email.send()
+
+    def send_confirmation_email(self, user):
+        uid = urlsafe_base64_encode(force_bytes(user.pk))
+        token = account_activation_token.make_token(user)
+
+        confirmation_url = f"{config('FRONTEND_URL')}/api/registration/confirm-email/{uid}/{token}/"
+
+        subject = "Confirm your email address"
+        user_name = user.email.split("@")[0].capitalize()
+    
+        html_message = render_to_string("email_confirmation.html", {
+            "user_name": user_name,
+            "confirmation_url": confirmation_url
+        })
+
+        # Nur für Fallback-Text-E-Mail (optional)
+        text_message = f"Hi {user_name},\n\nClick the link to activate your account:\n{confirmation_url}"
 
         email = EmailMultiAlternatives(
             subject=subject,

@@ -7,9 +7,12 @@ from django.core import mail
 import re
 from django.contrib.auth.tokens import default_token_generator
 from django.utils.http import urlsafe_base64_decode
+from urllib.parse import urlparse
+from django.core.exceptions import ValidationError
 
 User = get_user_model()
 class SendResetPasswordMailTestCase(APITestCase):
+
     def setUp(self):
         """
         Set up a user
@@ -91,7 +94,21 @@ class SendResetPasswordMailTestCase(APITestCase):
         
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(len(mail.outbox), 1)
-        self.assertEqual(mail.outbox[0].subject, 'You have forgotten your password - Reset your password')
+        self.assertEqual(mail.outbox[0].subject, 'You have forgotten your password - Reset your password')   
+        
+        
+class SendRestPasswordLinkTokenUIDTestCase(APITestCase):
+
+    def setUp(self):
+        """
+        Set up a user
+        """
+        self.user = get_user_model().objects.create_user(
+            email="testuser@example.com",
+            password="password",
+            is_active=True
+        )
+        self.url_sendresetpasswordmail = reverse('sendresetpasswordmail')
 
 
     def test_email_contains_reset_link_with_token_and_uid(self):
@@ -161,3 +178,147 @@ class SendResetPasswordMailTestCase(APITestCase):
         self.assertIsNotNone(match, "Reset URL does not contain UID and token")
 
         return match.group("uidb64"), match.group("token")
+    
+
+class ConfirmResetPasswordTestCase(APITestCase):
+
+    def setUp(self):
+        """
+        Set up a user and send a reset password email to obtain a valid UID and token.
+        """
+        self.user = get_user_model().objects.create_user(
+            email="testuser@example.com",
+            password="password",
+            is_active=True
+        )
+        # self.url_resetpasswords = reverse('resetpasswords')
+        self.url_sendresetpasswordmail = reverse('sendresetpasswordmail')
+        
+        response = self.client.post(self.url_sendresetpasswordmail, {
+            "email": self.user.email
+        }, format="json")
+
+        link, uidb64, token = self.extract_uid_and_token_from_email()
+        self.link = link
+        self.uidb64 = uidb64
+        self.token = token
+
+
+    def test_change_password_successful(self):
+        """
+        Valid password reset should succeed and update the password.
+        """
+        new_password = "NewStrongPassword123#"
+        parsed_path = urlparse(self.link).path.replace("/forget-password-reset/", "/api/resetpasswords/")
+        response = self.client.post(parsed_path, {
+            "password": new_password,
+            "password_confirm": new_password
+        }, format="json")
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.data["detail"], "Password reset successful")
+        
+        self.user.refresh_from_db()
+        self.assertTrue(self.user.check_password(new_password))
+        self.assertFalse(self.user.check_password("password"))  
+
+
+    def test_new_passwords_do_not_match(self):
+        """
+        Passwords that don't match should result in an error.
+        """
+        parsed_path = urlparse(self.link).path.replace("/forget-password-reset/", "/api/resetpasswords/")
+        response = self.client.post(parsed_path, {
+            "password": "NewStrongPassword123#",
+            "password_confirm": "NewStrongPassword123*"
+        }, format="json")
+
+        self.assertEqual(response.status_code, 400)
+        self.assertIn("Passwords do not match.", str(response.data))
+
+
+    def test_new_password_does_not_meet_minimum_requirements(self):
+        """
+        Passwords that are too short should trigger validation errors.
+        """
+        parsed_path = urlparse(self.link).path.replace("/forget-password-reset/", "/api/resetpasswords/")
+        response = self.client.post(parsed_path, {
+            "password": "123456",
+            "password_confirm": "123456"
+        }, format="json")
+
+        self.assertEqual(response.status_code, 400)
+        self.assertIn("This password is too short. It must contain at least 8 characters.", str(response.data))
+
+    
+    def test_token_can_only_be_used_once(self):
+        """
+        The reset token should become invalid after it is used once.
+        """
+        new_password = "NewStrongPassword123#"
+        parsed_path = urlparse(self.link).path.replace("/forget-password-reset/", "/api/resetpasswords/")
+        response = self.client.post(parsed_path, {
+            "password": new_password,
+            "password_confirm": new_password
+        }, format="json")
+
+        response = self.client.post(parsed_path, {
+            "password": new_password,
+            "password_confirm": new_password
+        }, format="json")
+
+        self.assertEqual(response.status_code, 400)
+        self.assertEqual(response.data["detail"], "Invalid or expired token")
+
+    def test_invalid_or_expired_token(self):
+        """
+        Using an invalid or expired token should return an error.
+        """
+        new_password = "NewStrongPassword123#"
+        parsed_path = urlparse(self.link).path.replace("/forget-password-reset/", "/api/resetpasswords/")
+        invalid_path = parsed_path.replace(self.token, "invalid_token")
+        response = self.client.post(invalid_path , {
+            "password": new_password,
+            "password_confirm": new_password
+        }, format="json")
+
+        self.assertEqual(response.status_code, 400)
+        self.assertEqual(response.data["detail"], "Invalid or expired token")
+
+
+    def test_invalid_uid(self):
+        """
+        Using a malformed UID should result in an invalid link error.
+        """
+        parsed_path = urlparse(self.link).path.replace("/forget-password-reset/", "/api/resetpasswords/")
+        invalid_path = parsed_path.replace(self.uidb64, "invalid_uid")
+
+        response = self.client.post(invalid_path, {
+            "password": "AnotherNewPassword123#",
+            "password_confirm": "AnotherNewPassword123#"
+        }, format="json")
+
+        self.assertEqual(response.status_code, 400)
+        self.assertEqual(response.data["detail"], "Invalid link")
+
+    
+    def extract_uid_and_token_from_email(self):
+        """
+        Helper method to extract the uidb64 and token from the reset link inside the email.
+        Returns a tuple: (uidb64, token).
+        Asserts that:
+        - one email was sent,        
+        - the email contains a URL,
+        - the URL matches the pattern /forget-password-reset/<uidb64>/<token>/.
+        """
+        self.assertEqual(len(mail.outbox), 1, "No email was sent")
+        email_body = mail.outbox[0].body
+
+        match_link = re.search(r'https?://[^\s]+', email_body)
+        self.assertIsNotNone(match_link, "No URL found in email body")
+        reset_link = match_link.group(0)
+
+        match = re.search(r'/forget-password-reset/(?P<uidb64>[^/]+)/(?P<token>[^/]+)/', reset_link)
+        self.assertIsNotNone(match, "Reset URL does not contain UID and token")
+
+        return reset_link, match.group("uidb64"), match.group("token")

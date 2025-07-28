@@ -9,6 +9,7 @@ from django.contrib.auth.tokens import default_token_generator
 from django.utils.http import urlsafe_base64_decode
 from urllib.parse import urlparse
 from django.core.exceptions import ValidationError
+from .utils import extract_link_uid_and_token_from_email
 
 User = get_user_model()
 class SendResetPasswordMailTestCase(APITestCase):
@@ -140,7 +141,7 @@ class SendRestPasswordLinkTokenUIDTestCase(APITestCase):
             "email": self.user.email
         }, format="json")
 
-        uidb64, token = self.extract_uid_and_token_from_email()
+        link, uidb64, token = extract_link_uid_and_token_from_email(self)
         self.assertTrue(default_token_generator.check_token(self.user, token))
 
 
@@ -153,32 +154,10 @@ class SendRestPasswordLinkTokenUIDTestCase(APITestCase):
             "email": self.user.email
         }, format="json")
 
-        uidb64, _ = self.extract_uid_and_token_from_email()
+        link, uidb64, token = extract_link_uid_and_token_from_email(self)
         uid = urlsafe_base64_decode(uidb64).decode()
         self.assertEqual(int(uid), self.user.id)
-
-
-    def extract_uid_and_token_from_email(self):
-        """
-        Helper method to extract the uidb64 and token from the reset link inside the email.
-        Returns a tuple: (uidb64, token).
-        Asserts that:
-        - one email was sent,        
-        - the email contains a URL,
-        - the URL matches the pattern /forget-password-reset/<uidb64>/<token>/.
-        """
-        self.assertEqual(len(mail.outbox), 1, "No email was sent")
-        email_body = mail.outbox[0].body
-
-        match_link = re.search(r'https?://[^\s]+', email_body)
-        self.assertIsNotNone(match_link, "No URL found in email body")
-        reset_link = match_link.group(0)
-
-        match = re.search(r'/forget-password-reset/(?P<uidb64>[^/]+)/(?P<token>[^/]+)/', reset_link)
-        self.assertIsNotNone(match, "Reset URL does not contain UID and token")
-
-        return match.group("uidb64"), match.group("token")
-    
+            
 
 class ConfirmResetPasswordTestCase(APITestCase):
 
@@ -198,7 +177,7 @@ class ConfirmResetPasswordTestCase(APITestCase):
             "email": self.user.email
         }, format="json")
 
-        link, uidb64, token = self.extract_uid_and_token_from_email()
+        link, uidb64, token = extract_link_uid_and_token_from_email(self)
         self.link = link
         self.uidb64 = uidb64
         self.token = token
@@ -300,25 +279,3 @@ class ConfirmResetPasswordTestCase(APITestCase):
 
         self.assertEqual(response.status_code, 400)
         self.assertEqual(response.data["detail"], "Invalid link")
-
-    
-    def extract_uid_and_token_from_email(self):
-        """
-        Helper method to extract the uidb64 and token from the reset link inside the email.
-        Returns a tuple: (uidb64, token).
-        Asserts that:
-        - one email was sent,        
-        - the email contains a URL,
-        - the URL matches the pattern /forget-password-reset/<uidb64>/<token>/.
-        """
-        self.assertEqual(len(mail.outbox), 1, "No email was sent")
-        email_body = mail.outbox[0].body
-
-        match_link = re.search(r'https?://[^\s]+', email_body)
-        self.assertIsNotNone(match_link, "No URL found in email body")
-        reset_link = match_link.group(0)
-
-        match = re.search(r'/forget-password-reset/(?P<uidb64>[^/]+)/(?P<token>[^/]+)/', reset_link)
-        self.assertIsNotNone(match, "Reset URL does not contain UID and token")
-
-        return reset_link, match.group("uidb64"), match.group("token")

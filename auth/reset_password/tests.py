@@ -8,8 +8,8 @@ import re
 from django.contrib.auth.tokens import default_token_generator
 from django.utils.http import urlsafe_base64_decode
 from urllib.parse import urlparse
-from django.core.exceptions import ValidationError
 from .utils import extract_link_uid_and_token_from_email
+from django.core.exceptions import ValidationError
 
 User = get_user_model()
 class SendResetPasswordMailTestCase(APITestCase):
@@ -23,9 +23,7 @@ class SendResetPasswordMailTestCase(APITestCase):
             password="password",
             is_active=True
         )
-        # self.url_resetpasswords = reverse('resetpasswords')
         self.url_sendresetpasswordmail = reverse('sendresetpasswordmail')
-        # self.url_resetpasswordmailifloggedin = reverse('resetpasswordmailifloggedin')
 
 
     def test_reset_password_email_valid(self):
@@ -157,7 +155,7 @@ class SendRestPasswordLinkTokenUIDTestCase(APITestCase):
         link, uidb64, token = extract_link_uid_and_token_from_email(self)
         uid = urlsafe_base64_decode(uidb64).decode()
         self.assertEqual(int(uid), self.user.id)
-            
+
 
 class ConfirmResetPasswordTestCase(APITestCase):
 
@@ -279,3 +277,92 @@ class ConfirmResetPasswordTestCase(APITestCase):
 
         self.assertEqual(response.status_code, 400)
         self.assertEqual(response.data["detail"], "Invalid link")
+
+class ResetPasswordIfLoggedInTestCase(APITestCase):
+    def setUp(self):
+        
+        self.user = get_user_model().objects.create_user(
+            email="testuser@example.com",
+            password="password",
+            is_active=True
+        )
+        # self.url_resetpasswords = reverse('resetpasswords')
+        self.url_resetpasswordmailifloggedin = reverse('resetpasswordmailifloggedin')
+        self.login_url = reverse('login')
+        
+        response = self.client.post(self.login_url, {
+            "email": self.user.email,
+            "password": "password"   # <- hier das richtige Passwort
+        }, format="json")
+
+        self.assertEqual(response.status_code, 200)
+        self.access_token = response.data["access"]
+
+        # Authorization Header setzen für alle folgenden Requests
+        self.client.credentials(HTTP_AUTHORIZATION=f'Bearer {self.access_token}')
+
+    def test_reset_password_success(self):
+        response = self.client.post(self.url_resetpasswordmailifloggedin, {
+            "password_old": "password",
+            "password_new": "NewPassword123!",
+            "password_new_confirm": "NewPassword123!"
+        }, format="json")
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.data["detail"], "Password reset successful")
+        self.assertEqual(len(mail.outbox), 1)
+        self.assertEqual(mail.outbox[0].subject, 'Password successfully changed')
+
+    def test_reset_password_old_password_incorrect(self):
+        response = self.client.post(self.url_resetpasswordmailifloggedin, {
+            "password_old": "false_password",
+            "password_new": "NewPassword123!",
+            "password_new_confirm": "NewPassword123!"
+        }, format="json")
+
+        self.assertEqual(response.status_code, 400)
+        self.assertEqual(response.data["detail"], "Old password is incorrect")
+
+    def test_reset_password_new_password_not_match_with_confirm_password(self):
+        response = self.client.post(self.url_resetpasswordmailifloggedin, {
+            "password_old": "password",
+            "password_new": "NewPassword123!",
+            "password_new_confirm": "NewPassword123"
+        }, format="json")
+
+        self.assertEqual(response.status_code, 400)
+        self.assertIn("Passwords do not match.", response.data['non_field_errors'])
+
+
+    def test_reset_password_new_password_to_weak(self):
+        response = self.client.post(self.url_resetpasswordmailifloggedin, {
+            "password_old": "password",
+            "password_new": "123456",
+            "password_new_confirm": "123456"
+        }, format="json")
+
+        self.assertEqual(response.status_code, 400)
+        self.assertIn("This password is too short. It must contain at least 8 characters.", str(response.data))
+
+class ResetPasswordIfLoggedInWithoutTokenTestCase(APITestCase):
+    def setUp(self):
+        
+        self.user = get_user_model().objects.create_user(
+            email="testuser@example.com",
+            password="password123",
+            is_active=True
+        )
+        # self.url_resetpasswords = reverse('resetpasswords')
+        self.url_resetpasswordmailifloggedin = reverse('resetpasswordmailifloggedin')
+        self.login_url = reverse('login')
+
+    def test_reset_password_success(self):
+        response = self.client.post(self.url_resetpasswordmailifloggedin, {
+            "password_old": "password123",
+            "password_new": "NewPassword123!",
+            "password_new_confirm": "NewPassword123!"
+        }, format="json")
+
+        self.assertEqual(response.status_code, 401)
+        self.assertEqual(response.data["detail"], "Authentication credentials were not provided."
+)

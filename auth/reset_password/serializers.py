@@ -15,7 +15,7 @@ class SendResetPasswordMailSerializer(serializers.Serializer):
 
 class ResetPasswordIfLoggedInSerializer(serializers.Serializer):
     password_old = serializers.CharField(write_only=True)
-    password_new = serializers.CharField(write_only=True)
+    password_new = serializers.CharField(write_only=True, validators=[validate_password])
     password_new_confirm = serializers.CharField(write_only=True)
 
     def validate(self, data):

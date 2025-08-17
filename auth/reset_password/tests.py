@@ -280,19 +280,23 @@ class ConfirmResetPasswordTestCase(APITestCase):
 
 class ResetPasswordIfLoggedInTestCase(APITestCase):
     def setUp(self):
-        
+        """
+        Setup for tests requiring authentication:
+        - Create an active user.
+        - Log the user in to obtain a valid access token.
+        - Set the token in the Authorization header for all requests.
+        """
         self.user = get_user_model().objects.create_user(
             email="testuser@example.com",
             password="password",
             is_active=True
         )
-        # self.url_resetpasswords = reverse('resetpasswords')
         self.url_resetpasswordmailifloggedin = reverse('resetpasswordmailifloggedin')
         self.login_url = reverse('login')
         
         response = self.client.post(self.login_url, {
             "email": self.user.email,
-            "password": "password"   # <- hier das richtige Passwort
+            "password": "password"
         }, format="json")
 
         self.assertEqual(response.status_code, 200)
@@ -302,6 +306,9 @@ class ResetPasswordIfLoggedInTestCase(APITestCase):
         self.client.credentials(HTTP_AUTHORIZATION=f'Bearer {self.access_token}')
 
     def test_reset_password_success(self):
+        """
+        Test successful password reset when user provides the correct old password.
+        """
         response = self.client.post(self.url_resetpasswordmailifloggedin, {
             "password_old": "password",
             "password_new": "NewPassword123!",
@@ -314,6 +321,9 @@ class ResetPasswordIfLoggedInTestCase(APITestCase):
         self.assertEqual(mail.outbox[0].subject, 'Password successfully changed')
 
     def test_reset_password_old_password_incorrect(self):
+        """
+        Test password reset fails when old password is incorrect.
+        """
         response = self.client.post(self.url_resetpasswordmailifloggedin, {
             "password_old": "false_password",
             "password_new": "NewPassword123!",
@@ -324,6 +334,9 @@ class ResetPasswordIfLoggedInTestCase(APITestCase):
         self.assertEqual(response.data["detail"], "Old password is incorrect")
 
     def test_reset_password_new_password_not_match_with_confirm_password(self):
+        """
+        Test password reset fails when new password and confirmation do not match.
+        """
         response = self.client.post(self.url_resetpasswordmailifloggedin, {
             "password_old": "password",
             "password_new": "NewPassword123!",
@@ -335,6 +348,9 @@ class ResetPasswordIfLoggedInTestCase(APITestCase):
 
 
     def test_reset_password_new_password_to_weak(self):
+        """
+        Test password reset fails when new password does not meet strength requirements.
+        """
         response = self.client.post(self.url_resetpasswordmailifloggedin, {
             "password_old": "password",
             "password_new": "123456",
@@ -346,17 +362,24 @@ class ResetPasswordIfLoggedInTestCase(APITestCase):
 
 class ResetPasswordIfLoggedInWithoutTokenTestCase(APITestCase):
     def setUp(self):
-        
+        """
+        Setup for tests without authentication:
+        - Create an active user.
+        - Do not log the user in and do not attach a token.
+        - This allows testing of requests without valid credentials.
+        """
         self.user = get_user_model().objects.create_user(
             email="testuser@example.com",
             password="password123",
             is_active=True
         )
-        # self.url_resetpasswords = reverse('resetpasswords')
         self.url_resetpasswordmailifloggedin = reverse('resetpasswordmailifloggedin')
         self.login_url = reverse('login')
 
     def test_reset_password_success(self):
+        """
+        Test password reset fails with 401 Unauthorized when no authentication token is provided.
+        """
         response = self.client.post(self.url_resetpasswordmailifloggedin, {
             "password_old": "password123",
             "password_new": "NewPassword123!",
@@ -364,5 +387,4 @@ class ResetPasswordIfLoggedInWithoutTokenTestCase(APITestCase):
         }, format="json")
 
         self.assertEqual(response.status_code, 401)
-        self.assertEqual(response.data["detail"], "Authentication credentials were not provided."
-)
+        self.assertEqual(response.data["detail"], "Authentication credentials were not provided.")

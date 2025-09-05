@@ -7,13 +7,13 @@ class ShoppingListItemSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = ShoppingListItem
-        fields = ["ingredient", "amount", "unit"]
+        fields = ["ingredient", "amount", "unit", "shopping_list"]
 
     def create(self, validated_data):
         ingredient_name = validated_data["ingredient"].strip().lower()
         shopping_amount = validated_data["amount"]
         unit = validated_data["unit"]
-        author = validated_data["author"]
+        shopping_list = validated_data["shopping_list"]
 
         # Ingredient abrufen oder erstellen
         ingredient, _ = Ingredient.objects.get_or_create(name=ingredient_name)
@@ -21,7 +21,7 @@ class ShoppingListItemSerializer(serializers.ModelSerializer):
         # ShoppingListItem abrufen oder erstellen
         shopping_item, created = ShoppingListItem.objects.get_or_create(
             ingredient=ingredient,
-            author=author,
+            shopping_list=shopping_list,
             defaults={"amount": shopping_amount, "unit": unit},
         )
 

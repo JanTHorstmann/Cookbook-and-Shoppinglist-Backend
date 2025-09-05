@@ -9,7 +9,7 @@ class ShoppingListItemViewSet(viewsets.ModelViewSet):
     permission_classes = [IsAuthenticated]  # Nur authentifizierte User dürfen darauf zugreifen
 
     def get_queryset(self):
-        return ShoppingListItem.objects.filter(author=self.request.user)
+        return ShoppingListItem.objects.filter(shopping_list=self.request.shopping_list)
 
     def perform_create(self, serializer):
-        serializer.save(author=self.request.user)
+        serializer.save(author=self.request.shopping_list)

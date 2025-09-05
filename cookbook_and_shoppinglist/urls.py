@@ -22,6 +22,7 @@ urlpatterns = [
     path('api/', include('modules.cookbook.ingredients.urls')),
     path('api/', include('modules.cookbook.recipe.urls')),
     path('api/', include('modules.shoppinglists.shoppinglistitem.urls')),
+    path('api/', include('modules.shoppinglists.listcollection.urls')),
     path('api/', include('auth.registration.urls')),
     path('api/', include('auth.login.urls')),
     path('api/', include('auth.reset_password.urls')),

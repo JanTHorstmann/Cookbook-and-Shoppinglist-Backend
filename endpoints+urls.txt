@@ -1,0 +1,203 @@
+# ==========================
+# 🧂 INGREDIENTS ENDPOINTS
+# ==========================
+
+# GET /api/ingredients/
+# → Gibt alle global verfügbaren Zutaten zurück
+GET /api/ingredients/
+
+# GET /api/ingredients/<id>/
+# → Gibt Details zu einer bestimmten Zutat zurück
+GET /api/ingredients/<id>/
+
+# POST /api/ingredients/
+# → Erstellt eine neue globale Zutat (z. B. "Tomate")
+# Erwartet:
+# {
+#   "name": "Tomate"
+# }
+POST /api/ingredients/
+
+# PATCH /api/ingredients/<id>/
+# → Aktualisiert eine vorhandene Zutat (z. B. Name ändern)
+# Erwartet:
+# {
+#   "name": "Cocktailtomate"
+# }
+PATCH /api/ingredients/<id>/
+
+# DELETE /api/ingredients/<id>/
+# → Löscht eine Zutat (Achtung: global!)
+DELETE /api/ingredients/<id>/
+
+
+# ==============================
+# 🧾 SHOPPINGLIST ITEM ENDPOINTS
+# ==============================
+
+# GET /api/shoppinglistitem/
+# → Gibt alle Items (Einkaufslisten-Einträge) zurück, die zu den Listen des Users gehören
+GET /api/shoppinglistitem/
+
+# GET /api/shoppinglistitem/<id>/
+# → Gibt Details zu einem bestimmten Eintrag zurück
+GET /api/shoppinglistitem/<id>/
+
+# POST /api/shoppinglistitem/
+# → Fügt ein neues Item zu einer bestimmten Liste hinzu
+# Erwartet:
+# {
+#   "ingredient": "Tomate",
+#   "amount": "2",
+#   "unit": "Stk",
+#   "shopping_list": 1
+# }
+# Falls die Zutat in derselben Liste schon existiert, wird die Menge addiert.
+POST /api/shoppinglistitem/
+
+# PATCH /api/shoppinglistitem/<id>/
+# → Aktualisiert ein Item (z. B. Menge ändern)
+# Erwartet:
+# {
+#   "amount": "3.5"
+# }
+PATCH /api/shoppinglistitem/<id>/
+
+# DELETE /api/shoppinglistitem/<id>/
+# → Löscht ein Item aus der Liste
+DELETE /api/shoppinglistitem/<id>/
+
+
+# ======================================
+# 🛒 LISTCOLLECTION (EINKAUFSLISTEN) ENDPOINTS
+# ======================================
+
+# GET /api/listcollection/
+# → Gibt alle Einkaufslisten zurück, bei denen der User Autor oder Teilnehmer ist
+GET /api/listcollection/
+
+# GET /api/listcollection/<id>/
+# → Gibt Details zu einer bestimmten Liste (mit Teilnehmern und Items)
+GET /api/listcollection/<id>/
+
+# POST /api/listcollection/
+# → Erstellt eine neue Liste (Autor ist automatisch der eingeloggte User)
+# Erwartet:
+# {
+#   "name": "Wocheneinkauf",
+#   "participants": [2, 3]   # optional
+# }
+POST /api/listcollection/
+
+# PATCH /api/listcollection/<id>/
+# → Ändert z. B. den Namen oder Teilnehmer der Liste
+# Erwartet:
+# {
+#   "name": "Feierabend-Shopping",
+#   "participants": [2]
+# }
+PATCH /api/listcollection/<id>/
+
+# DELETE /api/listcollection/<id>/
+# → Löscht eine Liste (nur Autor darf das)
+DELETE /api/listcollection/<id>/
+
+# POST /api/listcollection/<id>/leave/
+# → Teilnehmer kann sich selbst aus der Liste entfernen
+POST /api/listcollection/<id>/leave/
+
+
+
+
+# ==========================
+# 🔐 AUTHENTIFIZIERUNG / LOGIN
+# ==========================
+
+# POST /api/auth/register/
+# → Registriert einen neuen User
+# Erwartet:
+# {
+#   "email": "user@example.com",
+#   "username": "username123",
+#   "password": "MeinSicheresPasswort123!"
+# }
+
+# Antwort:
+# {
+#   "message": "User created successfully. Please check your email to confirm your account."
+# }
+
+
+# POST /api/auth/login/
+# → Login mit E-Mail und Passwort, gibt JWT-Token zurück
+# Erwartet:
+# {
+#   "email": "user@example.com",
+#   "password": "MeinSicheresPasswort123!"
+# }
+
+# Beispiel-Antwort:
+# {
+#   "access": "eyJ0eXAiOiJKV1QiLCJh...",
+#   "refresh": "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9...",
+#   "user": {
+#       "id": 1,
+#       "email": "user@example.com",
+#       "username": "username123"
+#   }
+# }
+
+
+# POST /api/auth/token/refresh/
+# → Gibt neuen Access-Token aus dem Refresh-Token zurück
+# Erwartet:
+# {
+#   "refresh": "<refresh_token>"
+# }
+
+# Antwort:
+# {
+#   "access": "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9..."
+# }
+
+
+# ==========================
+# 🧾 AUTHENTIFIZIERUNG IM HEADER
+# ==========================
+
+# Für alle geschützten Endpoints (z. B. Zutaten, Einkaufslisten usw.)
+# muss der JWT-Access-Token im Header mitgesendet werden:
+
+# Beispiel-Header:
+Authorization: Bearer <ACCESS_TOKEN>
+
+# Beispiel-Request:
+GET /api/listcollection/
+Headers:
+  Content-Type: application/json
+  Authorization: Bearer eyJ0eXAiOiJKV1QiLCJh...
+
+# ==========================
+# 🧍 USER INFOS
+# ==========================
+
+# GET /api/auth/user/
+# → Gibt Informationen über den eingeloggten User zurück
+# (nützlich für Frontend, um z. B. den Namen oder die E-Mail anzuzeigen)
+GET /api/auth/user/
+
+# Antwort:
+# {
+#   "id": 1,
+#   "email": "user@example.com",
+#   "username": "username123"
+# }
+
+
+# ==========================
+# 🚪 LOGOUT (optional)
+# ==========================
+
+# POST /api/auth/logout/
+# → (Optional) Ungültig machen des Tokens im Frontend
+# Kein Request an den Server nötig, einfach Token im Frontend löschen.

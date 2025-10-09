@@ -4,7 +4,7 @@ from .models import ListCollection
 class ListCollectionSerializer(serializers.ModelSerializer):
     class Meta:
         model = ListCollection
-        fields = ["id", "name", "author", "created_at", "updated_at"]
+        fields = ["id", "name", "author", "participants", "created_at", "updated_at"]
         read_only_fields = ["author", "created_at", "updated_at"]
 
 class ParticipantActionSerializer(serializers.Serializer):

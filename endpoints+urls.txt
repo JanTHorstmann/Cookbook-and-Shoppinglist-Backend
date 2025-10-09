@@ -94,9 +94,16 @@ POST /api/listcollection/
 # Erwartet:
 # {
 #   "name": "Feierabend-Shopping",
-#   "participants": [2]
 # }
 PATCH /api/listcollection/<id>/
+
+# POST /api/listcollection/<id>/add-participant/
+# → Fügt einen Teilnehmer hinzu
+# Erwartet:
+# {
+#   "user_id": 2    # ID vom Teilnehmer
+# }
+POST /api/listcollection/<id>/add-participant/
 
 # DELETE /api/listcollection/<id>/
 # → Löscht eine Liste (nur Autor darf das)
@@ -113,12 +120,11 @@ POST /api/listcollection/<id>/leave/
 # 🔐 AUTHENTIFIZIERUNG / LOGIN
 # ==========================
 
-# POST /api/auth/register/
+# POST /api/register/
 # → Registriert einen neuen User
 # Erwartet:
 # {
 #   "email": "user@example.com",
-#   "username": "username123",
 #   "password": "MeinSicheresPasswort123!"
 # }
 
@@ -128,7 +134,7 @@ POST /api/listcollection/<id>/leave/
 # }
 
 
-# POST /api/auth/login/
+# POST /api/login/
 # → Login mit E-Mail und Passwort, gibt JWT-Token zurück
 # Erwartet:
 # {
@@ -140,15 +146,10 @@ POST /api/listcollection/<id>/leave/
 # {
 #   "access": "eyJ0eXAiOiJKV1QiLCJh...",
 #   "refresh": "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9...",
-#   "user": {
-#       "id": 1,
-#       "email": "user@example.com",
-#       "username": "username123"
-#   }
 # }
 
 
-# POST /api/auth/token/refresh/
+# POST /api/token/refresh/
 # → Gibt neuen Access-Token aus dem Refresh-Token zurück
 # Erwartet:
 # {
@@ -181,10 +182,10 @@ Headers:
 # 🧍 USER INFOS
 # ==========================
 
-# GET /api/auth/user/
+# GET /api/user/
 # → Gibt Informationen über den eingeloggten User zurück
 # (nützlich für Frontend, um z. B. den Namen oder die E-Mail anzuzeigen)
-GET /api/auth/user/
+GET /api/user/
 
 # Antwort:
 # {
@@ -198,6 +199,6 @@ GET /api/auth/user/
 # 🚪 LOGOUT (optional)
 # ==========================
 
-# POST /api/auth/logout/
+# POST /api/logout/
 # → (Optional) Ungültig machen des Tokens im Frontend
 # Kein Request an den Server nötig, einfach Token im Frontend löschen.

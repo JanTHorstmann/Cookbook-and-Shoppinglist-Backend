@@ -1,0 +1,53 @@
+🔹 Allgemein
+
+Authentifizierte User können ihre eigenen Listen abrufen.                               # Done
+
+Authentifizierte User sehen auch Listen, an denen sie Teilnehmer sind.                  # Done
+
+Nicht authentifizierte User bekommen 401 Unauthorized.                                  # Done
+
+Das Erstellen einer Liste setzt automatisch den eingeloggten User als Autor.            # Done
+
+🔹 Löschen
+
+Nur der Autor kann eine Liste löschen (204 No Content).                                 # Done
+
+Teilnehmer oder andere User dürfen die Liste nicht löschen (403 Forbidden).             # Done
+
+🔹 Verlassen (leave-list)
+
+Teilnehmer können die Liste erfolgreich verlassen (200 OK).
+
+Der Autor kann die Liste nicht über /leave/ verlassen (400 Bad Request).
+
+Ein User, der kein Teilnehmer ist, erhält beim /leave/-Versuch 400 Bad Request.
+
+🔹 Teilnehmer hinzufügen (add-participant)
+
+Nur der Autor darf Teilnehmer hinzufügen (200 OK).
+
+Das Hinzufügen eines bereits vorhandenen Teilnehmers gibt 400 Bad Request.
+
+Das Hinzufügen eines nicht existierenden Users gibt 404 Not Found.
+
+Das Hinzufügen des Autors selbst gibt 400 Bad Request.
+
+Nicht-Autoren erhalten 403 Forbidden, wenn sie jemanden hinzufügen wollen.
+
+🔹 Teilnehmer entfernen (remove-participant)
+
+Nur der Autor darf Teilnehmer entfernen (200 OK).
+
+Das Entfernen eines Users, der kein Teilnehmer ist, gibt 400 Bad Request.
+
+Das Entfernen eines nicht existierenden Users gibt 404 Not Found.
+
+Nicht-Autoren erhalten 403 Forbidden, wenn sie jemanden entfernen wollen.
+
+🔹 Validierung & Felder
+
+Beim Erstellen darf name nicht leer sein (400 Bad Request).
+
+created_at und updated_at sind automatisch gesetzt.
+
+author ist schreibgeschützt (kann nicht übergeben werden).

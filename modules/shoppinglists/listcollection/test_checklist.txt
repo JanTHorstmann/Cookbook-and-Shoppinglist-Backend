@@ -16,33 +16,33 @@ Teilnehmer oder andere User dürfen die Liste nicht löschen (403 Forbidden).   
 
 🔹 Verlassen (leave-list)
 
-Teilnehmer können die Liste erfolgreich verlassen (200 OK).
+Teilnehmer können die Liste erfolgreich verlassen (200 OK).                             # Done
 
-Der Autor kann die Liste nicht über /leave/ verlassen (400 Bad Request).
+Der Autor kann die Liste nicht über /leave/ verlassen (400 Bad Request).                # Done
 
 Ein User, der kein Teilnehmer ist, erhält beim /leave/-Versuch 400 Bad Request.
 
 🔹 Teilnehmer hinzufügen (add-participant)
 
-Nur der Autor darf Teilnehmer hinzufügen (200 OK).
+Nur der Autor darf Teilnehmer hinzufügen (200 OK).                                      # Done
 
-Das Hinzufügen eines bereits vorhandenen Teilnehmers gibt 400 Bad Request.
+Das Hinzufügen eines bereits vorhandenen Teilnehmers gibt 400 Bad Request.              # Done
 
-Das Hinzufügen eines nicht existierenden Users gibt 404 Not Found.
+Das Hinzufügen eines nicht existierenden Users gibt 404 Not Found.                      # Done
 
-Das Hinzufügen des Autors selbst gibt 400 Bad Request.
+Das Hinzufügen des Autors selbst gibt 400 Bad Request.                                  # Done
 
-Nicht-Autoren erhalten 403 Forbidden, wenn sie jemanden hinzufügen wollen.
+Nicht-Autoren erhalten 403 Forbidden, wenn sie jemanden hinzufügen wollen.              # Done
 
 🔹 Teilnehmer entfernen (remove-participant)
 
-Nur der Autor darf Teilnehmer entfernen (200 OK).
+Nur der Autor darf Teilnehmer entfernen (200 OK).                                       # Done
 
-Das Entfernen eines Users, der kein Teilnehmer ist, gibt 400 Bad Request.
+Das Entfernen eines Users, der kein Teilnehmer ist, gibt 400 Bad Request.               # Done
 
-Das Entfernen eines nicht existierenden Users gibt 404 Not Found.
+Das Entfernen eines nicht existierenden Users gibt 404 Not Found.                       # Done
 
-Nicht-Autoren erhalten 403 Forbidden, wenn sie jemanden entfernen wollen.
+Nicht-Autoren erhalten 403 Forbidden, wenn sie jemanden entfernen wollen.               # Done
 
 🔹 Validierung & Felder
 

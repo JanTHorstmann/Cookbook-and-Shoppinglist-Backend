@@ -15,6 +15,12 @@ class BaseListCollectionSetup(APITestCase):
         self.user2 = User.objects.create_user(
             email="user2@example.com", password="testpassword123"
         )
+        self.user3 = User.objects.create_user(
+            email="user3@example.com", password="testpassword123"
+        )
+        self.user4 = User.objects.create_user(
+            email="user4@example.com", password="testpassword123"
+        )
 
         self.list_user1 = ListCollection.objects.create(
             name="User1 Liste", author=self.user1
@@ -23,8 +29,13 @@ class BaseListCollectionSetup(APITestCase):
             name="User2 Liste", author=self.user2
         )        
         self.list_user1.participants.add(self.user2)
+        self.list_user1.participants.add(self.user4)
 
         self.url = reverse("listcollection-list")
+        self.leave_url_list_user1 = reverse("listcollection-leave-list", args=[self.list_user1.id])
+        self.add_url_list_user1 = reverse("listcollection-add-participant", args=[self.list_user1.id])
+        self.remove_url_list_user1 = reverse("listcollection-remove-participant", args=[self.list_user1.id])
+
 
 class ListCollectionCommonTests(BaseListCollectionSetup):
 
@@ -111,3 +122,95 @@ class ListCollectionCommonTests(BaseListCollectionSetup):
         self.assertEqual(response.data['detail'], "Only the author can delete this list.")
         self.assertTrue(ListCollection.objects.filter(id=self.list_user1.id).exists())
 
+
+class ListCollectionParticipantsLeaveTests(BaseListCollectionSetup):
+
+    def test_participants_can_successfully_leave_the_list(self):        
+        self.client.force_authenticate(user=self.user2)
+        response = self.client.post(self.leave_url_list_user1)
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data['detail'], "You have left the list.")
+
+
+    def test_author_cannot_leave_the_list(self):
+        self.client.force_authenticate(user=self.user1)
+        response = self.client.post(self.leave_url_list_user1)
+
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertEqual(response.data['detail'], "You are not a participant of this list.")
+
+
+class ListCollectionAuthorAddParticipantsTests(BaseListCollectionSetup):
+
+    def test_author_can_add_participants(self):
+        self.client.force_authenticate(user=self.user1)
+        response = self.client.post(self.add_url_list_user1, {"user_id" : 3})
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data['detail'], "Participant added successfully.")
+
+
+    def test_participant_already_added(self):
+        self.client.force_authenticate(user=self.user1)
+        response = self.client.post(self.add_url_list_user1, {"user_id" : 2})
+
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertEqual(response.data['detail'], "User is already a participant.")
+
+
+    def test_adding_a_non_existent_user(self):
+        self.client.force_authenticate(user=self.user1)
+        response = self.client.post(self.add_url_list_user1, {"user_id" : 5})
+
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+        self.assertEqual(response.data['detail'], "User does not exist.")
+
+
+    def test_only_author_can_add_participants(self):
+        self.client.force_authenticate(user=self.user2)
+        response = self.client.post(self.add_url_list_user1, {"user_id" : 3})
+
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+        self.assertEqual(response.data['detail'], "Only the author can add participants.")
+
+
+    def test_author_cannot_added_to_participants(self):
+        self.client.force_authenticate(user=self.user1)
+        response = self.client.post(self.add_url_list_user1, {"user_id" : 1})
+
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertEqual(response.data['detail'], "Author is already the owner of this list.")
+
+class ListCollectionAuthorRemoveParticipantsTests(BaseListCollectionSetup):
+
+    def test_only_author_can_remove_participants(self):
+        self.client.force_authenticate(user=self.user4)
+        response = self.client.post(self.remove_url_list_user1, {"user_id" : 2})
+
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+        self.assertEqual(response.data['detail'], "Only the author can remove participants.")
+
+
+    def test_remove_a_non_existent_user(self):
+        self.client.force_authenticate(user=self.user1)
+        response = self.client.post(self.remove_url_list_user1, {"user_id" : 5})
+
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+        self.assertEqual(response.data['detail'], "User does not exist.")
+
+
+    def test_remove_a_non_participant_user(self):
+        self.client.force_authenticate(user=self.user1)
+        response = self.client.post(self.remove_url_list_user1, {"user_id" : 3})
+
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertEqual(response.data['detail'], "User is not a participant.")
+
+
+    def test_author_can_remove_participants(self):
+        self.client.force_authenticate(user=self.user1)
+        response = self.client.post(self.remove_url_list_user1, {"user_id" : 2})
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data['detail'], "Participant removed successfully.")

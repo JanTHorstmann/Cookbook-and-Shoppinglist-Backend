@@ -46,7 +46,7 @@ Nicht-Autoren erhalten 403 Forbidden, wenn sie jemanden entfernen wollen.       
 
 🔹 Validierung & Felder
 
-Beim Erstellen darf name nicht leer sein (400 Bad Request).
+Beim Erstellen darf name nicht leer sein (400 Bad Request).                             # Done
 
 created_at und updated_at sind automatisch gesetzt.
 

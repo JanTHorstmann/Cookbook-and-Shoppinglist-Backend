@@ -31,7 +31,7 @@ class BaseListCollectionSetup(APITestCase):
         self.list_user1.participants.add(self.user2)
         self.list_user1.participants.add(self.user4)
 
-        self.url = reverse("listcollection-list")
+        self.list_collections_url = reverse("listcollection-list")
         self.leave_url_list_user1 = reverse("listcollection-leave-list", args=[self.list_user1.id])
         self.add_url_list_user1 = reverse("listcollection-add-participant", args=[self.list_user1.id])
         self.remove_url_list_user1 = reverse("listcollection-remove-participant", args=[self.list_user1.id])
@@ -42,7 +42,7 @@ class ListCollectionCommonTests(BaseListCollectionSetup):
     def test_authenticated_user_can_retrieve_own_lists(self):
         """Ein authentifizierter User soll nur seine eigenen Listen sehen."""
         self.client.force_authenticate(user=self.user1)
-        response = self.client.get(self.url)
+        response = self.client.get(self.list_collections_url)
 
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(len(response.data), 1)
@@ -50,10 +50,25 @@ class ListCollectionCommonTests(BaseListCollectionSetup):
         self.assertEqual(response.data[0]["author"], self.user1.id)
 
 
+    def test_create_without_name(self):
+        self.client.force_authenticate(user=self.user1)    
+        response = self.client.post(self.list_collections_url, {"name": ""})
+
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertIn("Name cannot be empty or whitespace.", response.data["name"])
+
+    def test_create_whitespace_name(self):
+        self.client.force_authenticate(user=self.user1)    
+        response = self.client.post(self.list_collections_url, {"name": "   "})
+
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertIn("Name cannot be empty or whitespace.", response.data["name"])
+
+
     def test_authenticated_user_can_see_lists_where_they_are_participant(self):
         """Ein eingeloggter User soll Listen sehen, bei denen er als Teilnehmer eingetragen ist."""
         self.client.force_authenticate(user=self.user2)
-        response = self.client.get(self.url)
+        response = self.client.get(self.list_collections_url)
 
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
@@ -72,7 +87,7 @@ class ListCollectionCommonTests(BaseListCollectionSetup):
 
     def test_participants_field_is_the_correct_type(self):
         self.client.force_authenticate(user=self.user2)
-        response = self.client.get(self.url)
+        response = self.client.get(self.list_collections_url)
         list_user1_data = next(
             (l for l in response.data if l["id"] == self.list_user1.id), None
         )
@@ -83,17 +98,17 @@ class ListCollectionCommonTests(BaseListCollectionSetup):
 
 
     def test_unauthenticated_users_get_401_unauthorized(self):
-        response = self.client.get(self.url)
+        response = self.client.get(self.list_collections_url)
 
         self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
 
 
     def test_creating_a_list_automatically_sets_the_logged_in_user_as_the_author(self):
         self.client.force_authenticate(user=self.user1)
-        create_response = self.client.post(self.url, {"name": "Testliste"})
+        create_response = self.client.post(self.list_collections_url, {"name": "Testliste"})
         self.assertEqual(create_response.status_code, status.HTTP_201_CREATED)
 
-        response = self.client.get(self.url)
+        response = self.client.get(self.list_collections_url)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         list_user1_data = next(
             (l for l in response.data if l["name"] == "Testliste"), None

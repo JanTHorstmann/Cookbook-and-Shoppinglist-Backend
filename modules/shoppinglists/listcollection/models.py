@@ -3,7 +3,7 @@ from modules.custom_user.models import CustomUser
 from django.contrib.auth import get_user_model
 
 class ListCollection(models.Model):
-    name = models.CharField(max_length=50, blank=False)
+    name = models.CharField(max_length=50, blank=True)
     participants = models.ManyToManyField(CustomUser, related_name="shared_collections", blank=True)
     author = models.ForeignKey(get_user_model(),blank=False, on_delete=models.CASCADE, related_name="owned_lists")
 

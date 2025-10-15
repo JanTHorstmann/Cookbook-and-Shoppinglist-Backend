@@ -1,0 +1,49 @@
+name: Run Django Tests
+
+
+on:
+  push:
+    branches: [ main, dev ]
+  pull_request:
+    branches: [ main, dev ]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.10'
+
+      - name: Install dependencies
+        run: |
+          python -m venv env
+          source env/bin/activate
+          pip install -r requirements.txt
+
+      - name: Run tests
+        env:
+          DJANGO_SETTINGS_MODULE: cookbook_and_shoppinglist.settings
+        run: |
+          source env/bin/activate
+          pytest -v
+
+#services:
+#  postgres:
+#    image: postgres:14
+#    env:
+#      POSTGRES_DB: test_db
+#      POSTGRES_USER: test_user
+#      POSTGRES_PASSWORD: test_password
+#    ports:
+#      - 5432:5432
+#    options: >-
+#      --health-cmd="pg_isready -U test_user"
+#      --health-interval=10s
+#      --health-timeout=5s
+#      --health-retries=5

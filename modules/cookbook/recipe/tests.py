@@ -1,9 +1,10 @@
 from django.test import TestCase
 from django.contrib.auth import get_user_model
-from .models import Recipe
+from modules.cookbook.recipe.models import Recipe
 from modules.cookbook.recipe_ingredients.models import RecipeIngredient
 from modules.cookbook.ingredients.models import Ingredient
 from django.db.utils import IntegrityError
+from rest_framework.test import APITestCase
 
 class RecipeTestCase(TestCase):
     def setUp(self):
@@ -12,14 +13,14 @@ class RecipeTestCase(TestCase):
         """
         user = get_user_model().objects.create_user(
             email="testuser@example.com",
-            username="testuser",
             password="password"
         )
         
         self.ingredient = Ingredient.objects.create(name="Ei")
         self.recipe_ingredient = RecipeIngredient.objects.create(
             ingredient=self.ingredient, 
-            amount="1 Stück"
+            amount=1,
+            unit = "Stück"
         )
 
         recipe = Recipe.objects.create(

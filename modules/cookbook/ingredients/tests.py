@@ -1,14 +1,16 @@
 from django.test import TestCase
 from rest_framework import status
 from rest_framework.test import APITestCase
-from .models import Ingredient
+from modules.cookbook.ingredients.models import Ingredient
 from django.urls import reverse
+from django.contrib.auth import get_user_model
 
+User = get_user_model()
 class IngredientTestCase(TestCase):
     def setUp(self):
         """
         Set up two initial ingredients for testing.
-        """
+        """    
         Ingredient.objects.create(name="Mehl")
         Ingredient.objects.create(name="brot")
 
@@ -54,6 +56,9 @@ class IngredientAPITestCase(APITestCase):
         """        
         Set up two ingredients and prepare the API URL for list endpoints.
         """
+        self.user1 = User.objects.create_user(email="user1@example.com", password="testpassword123")
+        self.client.force_authenticate(user=self.user1)
+        
         self.ingredient1 = Ingredient.objects.create(name="mehl")
         self.ingredient2 = Ingredient.objects.create(name="brot")
         self.url = reverse("ingredients-list")

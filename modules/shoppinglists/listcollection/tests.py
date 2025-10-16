@@ -229,3 +229,6 @@ class ListCollectionAuthorRemoveParticipantsTests(BaseListCollectionSetup):
 
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.data['detail'], "Participant removed successfully.")
+
+    def test_created_at_and_updated_at_are_set_automatically(self):
+        pass

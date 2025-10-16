@@ -1,5 +1,5 @@
 from django.test import TestCase
-from .models import RecipeIngredient
+from modules.cookbook.recipe_ingredients.models import RecipeIngredient
 from modules.cookbook.ingredients.models import Ingredient
 from django.db.utils import IntegrityError
 from django.core.exceptions import ValidationError

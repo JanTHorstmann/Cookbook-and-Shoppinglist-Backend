@@ -1,0 +1,30 @@
+🔐 **Auth & Zugriff**
+- Nicht authentifizierte Benutzer bekommen `401 Unauthorized`.                                                      # Done
+- Authentifizierte Benutzer sehen nur Items aus eigenen oder geteilten Listen.                                      # Done
+
+📋 **GET (Abrufen)**
+- Benutzer sieht Items seiner eigenen Liste.                                                                        # Done
+- Benutzer sieht Items aus Listen, bei denen er Teilnehmer ist.                                                     # Done
+- Benutzer sieht keine Items aus fremden Listen.                                                                    # Done
+
+➕ **POST (Erstellen)**
+- Ein Item kann erfolgreich in einer eigenen Liste erstellt werden.
+- Wenn ein Ingredient bereits in der Liste existiert, wird die Menge addiert, statt ein neues Item zu erzeugen.
+- Wenn das Ingredient noch nicht existiert, wird es automatisch erstellt.
+- Erstellen in fremden Listen ist verboten (403).
+- Ungültige Daten (z. B. fehlende `amount` oder `unit`) führen zu Status 400.
+
+✏️ **PATCH / PUT / DELETE (Bearbeiten & Löschen)**
+- Der Autor kann Items bearbeiten und löschen.
+- Teilnehmer dürfen Items nicht bearbeiten oder löschen.
+- Fremde Benutzer haben keinen Zugriff.
+
+⚙️ **Serializer-Verhalten**
+- Ingredient-Namen werden automatisch in Kleinbuchstaben gespeichert.
+- Whitespace im Ingredient-Namen wird entfernt.
+- Serializer gibt eine ShoppingListItem-Instanz zurück.
+- Serializer erzeugt kein Duplikat bei gleichem Ingredient + Liste.
+
+🧩 **Modelltests**
+- `__str__` liefert den richtigen Text (z. B. „2.00 g Tomato 1“).
+- `unique_together` verhindert doppelte Items mit gleichem Ingredient in derselben Liste.

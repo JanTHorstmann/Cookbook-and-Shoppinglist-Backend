@@ -10,11 +10,13 @@ class ShoppingListItemViewSet(viewsets.ModelViewSet):
 
     def get_queryset(self):
         user = self.request.user
-        return ShoppingListItem.objects.filter(
+        return (
+        ShoppingListItem.objects.filter(
             shopping_list__author=user
         ) | ShoppingListItem.objects.filter(
             shopping_list__participants=user
         )
+    ).distinct()
 
     def perform_create(self, serializer):
         shopping_list_id = self.request.data.get('shopping_list')

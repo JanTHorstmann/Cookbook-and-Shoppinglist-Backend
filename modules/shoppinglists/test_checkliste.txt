@@ -8,11 +8,11 @@
 - Benutzer sieht keine Items aus fremden Listen.                                                                    # Done
 
 ➕ **POST (Erstellen)**
-- Ein Item kann erfolgreich in einer eigenen Liste erstellt werden.
-- Wenn ein Ingredient bereits in der Liste existiert, wird die Menge addiert, statt ein neues Item zu erzeugen.
+- Ein Item kann erfolgreich in einer eigenen Liste erstellt werden.                                                 # Done
+- Wenn ein Ingredient bereits in der Liste existiert, wird die Menge addiert, statt ein neues Item zu erzeugen.     # Done
 - Wenn das Ingredient noch nicht existiert, wird es automatisch erstellt.
-- Erstellen in fremden Listen ist verboten (403).
-- Ungültige Daten (z. B. fehlende `amount` oder `unit`) führen zu Status 400.
+- Erstellen in fremden Listen ist verboten (403).                                                                   # Done
+- Ungültige Daten (z. B. fehlende `amount` oder `unit`) führen zu Status 400.                                       # Done
 
 ✏️ **PATCH / PUT / DELETE (Bearbeiten & Löschen)**
 - Der Autor kann Items bearbeiten und löschen.

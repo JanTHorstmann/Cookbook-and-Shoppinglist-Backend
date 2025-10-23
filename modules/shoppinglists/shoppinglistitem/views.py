@@ -1,6 +1,8 @@
-from rest_framework import viewsets
+from rest_framework import viewsets, permissions
 from rest_framework.permissions import IsAuthenticated
+from rest_framework.exceptions import PermissionDenied
 from .models import ShoppingListItem
+from modules.shoppinglists.listcollection.models import ListCollection
 from .serializers import ShoppingListItemSerializer
 
 class ShoppingListItemViewSet(viewsets.ModelViewSet):
@@ -19,5 +21,17 @@ class ShoppingListItemViewSet(viewsets.ModelViewSet):
     ).distinct()
 
     def perform_create(self, serializer):
-        shopping_list_id = self.request.data.get('shopping_list')
-        serializer.save(shopping_list_id=shopping_list_id)
+        
+        shopping_list_id = self.request.data.get("shopping_list")
+
+        try:
+            shopping_list = ListCollection.objects.get(id=shopping_list_id)
+        except ListCollection.DoesNotExist:
+            raise PermissionDenied("The specified shopping list does not exist.")
+
+        user = self.request.user
+
+        if not (shopping_list.author == user or user in shopping_list.participants.all()):
+            raise PermissionDenied("You do not have permission to add items to this shopping list.")
+        
+        serializer.save(shopping_list=shopping_list)

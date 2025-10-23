@@ -126,3 +126,103 @@ class ShoppingListGetTests(BaseShoppingListSetup):
     
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(len(response.data), 0)
+
+class ShoppingListPostTests(BaseShoppingListSetup):
+
+    def test_an_item_can_be_successfully_created_in_a_separate_list(self):
+        self.client.force_authenticate(user=self.user1)
+        data = {
+        "ingredient": "Nudeln",
+        "amount": 500,
+        "unit": "Gramm",
+        "shopping_list": self.list_user1.id
+        }
+        response = self.client.post(self.shopping_list_url, data, format="json")
+
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        self.assertEqual(response.data["ingredient"], "Nudeln")
+        self.assertEqual(response.data["unit"], "Gramm")
+
+
+    def test_existing_item_increases_quantity(self):
+        self.client.force_authenticate(user=self.user1)
+
+        existing_item = self.shopping_list_list_user1
+        previous_amount = existing_item.amount
+
+        data = {
+        "ingredient": "tomaten",
+        "amount": 6,
+        "unit": "Stück",
+        "shopping_list": self.list_user1.id
+        }
+        response = self.client.post(self.shopping_list_url, data, format="json")
+        expected_amount = previous_amount + data["amount"]
+
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        self.assertEqual(response.data["ingredient"], "Tomaten")
+        self.assertEqual(float(response.data["amount"]), float(expected_amount))
+        self.assertEqual(ShoppingListItem.objects.count(), 1)
+
+
+    def test_user_cannot_add_items_to_foreign_lists(self):
+        self.client.force_authenticate(user=self.user3)
+        data = {
+        "ingredient": "Nudeln",
+        "amount": 500,
+        "unit": "Gramm",
+        "shopping_list": self.list_user1.id
+        }
+        response = self.client.post(self.shopping_list_url, data, format="json")
+
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+        self.assertEqual(response.data['detail'], "You do not have permission to add items to this shopping list.")
+
+
+    def test_invalid_data_name(self):
+        self.client.force_authenticate(user=self.user1)
+        data = {
+        "ingredient": "",
+        "amount": 500,
+        "unit": 'Gramm',
+        "shopping_list": self.list_user1.id
+        }
+        response = self.client.post(self.shopping_list_url, data, format="json")
+
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
+    def test_invalid_data_amount(self):
+        self.client.force_authenticate(user=self.user1)
+        data = {
+        "ingredient": "Nudeln",
+        "amount": '',
+        "unit": "Gramm",
+        "shopping_list": self.list_user1.id
+        }
+        response = self.client.post(self.shopping_list_url, data, format="json")
+
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
+    def test_invalid_data_unit(self):
+        self.client.force_authenticate(user=self.user1)
+        data = {
+        "ingredient": "Nudeln",
+        "amount": 500,
+        "unit": "",
+        "shopping_list": self.list_user1.id
+        }
+        response = self.client.post(self.shopping_list_url, data, format="json")
+
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
+    def test_invalid_data_shopping_list_id(self):
+        self.client.force_authenticate(user=self.user1)
+        data = {
+        "ingredient": "Nudeln",
+        "amount": 500,
+        "unit": "Gramm",
+        "shopping_list": ''
+        }
+        response = self.client.post(self.shopping_list_url, data, format="json")
+
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)

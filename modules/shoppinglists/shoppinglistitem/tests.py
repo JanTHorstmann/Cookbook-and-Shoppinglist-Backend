@@ -56,6 +56,7 @@ class BaseShoppingListSetup(APITestCase):
         # --- API Endpoints ---
         cls.list_collections_url = reverse("listcollection-list")
         cls.shopping_list_url = reverse("shoppinglistitem-list")
+        cls.shopping_list_detail_url = reverse("shoppinglistitem-details")
 
 class ShoppingListAuthTests(BaseShoppingListSetup):
     """
@@ -128,8 +129,22 @@ class ShoppingListGetTests(BaseShoppingListSetup):
         self.assertEqual(len(response.data), 0)
 
 class ShoppingListPostTests(BaseShoppingListSetup):
+    """
+    Tests for creating and validating shopping list items
+    in the Cookbook & ShoppingList application.
+
+    These tests cover:
+    - Successful creation of new items
+    - Increasing quantity for existing ingredients
+    - Permission restrictions for foreign lists
+    - Validation errors for invalid input data
+    """
 
     def test_an_item_can_be_successfully_created_in_a_separate_list(self):
+        """
+        A new shopping list item can be successfully created
+        when the ingredient does not already exist in the list.
+        """
         self.client.force_authenticate(user=self.user1)
         data = {
         "ingredient": "Nudeln",
@@ -145,6 +160,10 @@ class ShoppingListPostTests(BaseShoppingListSetup):
 
 
     def test_existing_item_increases_quantity(self):
+        """
+        If an ingredient already exists in the same shopping list,
+        its amount is increased instead of creating a duplicate item.
+        """
         self.client.force_authenticate(user=self.user1)
 
         existing_item = self.shopping_list_list_user1
@@ -166,6 +185,10 @@ class ShoppingListPostTests(BaseShoppingListSetup):
 
 
     def test_user_cannot_add_items_to_foreign_lists(self):
+        """
+        A user cannot add items to a shopping list
+        where they are neither the author nor a participant.
+        """
         self.client.force_authenticate(user=self.user3)
         data = {
         "ingredient": "Nudeln",
@@ -180,6 +203,9 @@ class ShoppingListPostTests(BaseShoppingListSetup):
 
 
     def test_invalid_data_name(self):
+        """
+        An empty ingredient name should return a 400 Bad Request.
+        """
         self.client.force_authenticate(user=self.user1)
         data = {
         "ingredient": "",
@@ -191,7 +217,11 @@ class ShoppingListPostTests(BaseShoppingListSetup):
 
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
 
+
     def test_invalid_data_amount(self):
+        """
+        A missing or invalid amount should return a 400 Bad Request.
+        """
         self.client.force_authenticate(user=self.user1)
         data = {
         "ingredient": "Nudeln",
@@ -203,7 +233,11 @@ class ShoppingListPostTests(BaseShoppingListSetup):
 
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
 
+
     def test_invalid_data_unit(self):
+        """
+        An empty unit should return a 400 Bad Request.
+        """
         self.client.force_authenticate(user=self.user1)
         data = {
         "ingredient": "Nudeln",
@@ -215,7 +249,11 @@ class ShoppingListPostTests(BaseShoppingListSetup):
 
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
 
+
     def test_invalid_data_shopping_list_id(self):
+        """
+        A missing or invalid shopping list ID should return a 400 Bad Request.
+        """
         self.client.force_authenticate(user=self.user1)
         data = {
         "ingredient": "Nudeln",
@@ -224,5 +262,22 @@ class ShoppingListPostTests(BaseShoppingListSetup):
         "shopping_list": ''
         }
         response = self.client.post(self.shopping_list_url, data, format="json")
+
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
+
+class ShoppingListEditTests(BaseShoppingListSetup):
+
+    def test_author_can_edit_items(self):
+        self.client.force_authenticate(user=self.user1)
+
+        data = {
+        "ingredient": "tomaten",
+        "amount": 6,
+        "unit": "Gramm",
+        "shopping_list": self.list_user1.id
+        }
+
+        response = self.client.patch(self.shopping_list_detail_url, data, format="json")
 
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)

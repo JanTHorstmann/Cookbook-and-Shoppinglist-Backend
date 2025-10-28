@@ -56,7 +56,7 @@ class BaseShoppingListSetup(APITestCase):
         # --- API Endpoints ---
         cls.list_collections_url = reverse("listcollection-list")
         cls.shopping_list_url = reverse("shoppinglistitem-list")
-        cls.shopping_list_detail_url = reverse("shoppinglistitem-details")
+        cls.shopping_list_user1_detail_url = reverse("shoppinglistitem-detail", kwargs={"pk": cls.shopping_list_list_user1.id})
 
 class ShoppingListAuthTests(BaseShoppingListSetup):
     """
@@ -278,6 +278,18 @@ class ShoppingListEditTests(BaseShoppingListSetup):
         "shopping_list": self.list_user1.id
         }
 
-        response = self.client.patch(self.shopping_list_detail_url, data, format="json")
+        response = self.client.patch(self.shopping_list_user1_detail_url, data, format="json")
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
 
-        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+    def test_participant_can_edit_items(self):
+        self.client.force_authenticate(user=self.user2)
+
+        data = {
+        "ingredient": "tomaten",
+        "amount": 6,
+        "unit": "Gramm",
+        "shopping_list": self.list_user1.id
+        }
+
+        response = self.client.patch(self.shopping_list_user1_detail_url, data, format="json")
+        self.assertEqual(response.status_code, status.HTTP_200_OK)

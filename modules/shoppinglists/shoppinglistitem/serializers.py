@@ -31,4 +31,18 @@ class ShoppingListItemSerializer(serializers.ModelSerializer):
             shopping_item.save()
 
         return shopping_item
-            
+    
+    def update(self, instance, validated_data):
+        """Beim Update Ingredient-String in Objekt umwandeln."""
+        ingredient_name = validated_data.get("ingredient")
+        if isinstance(ingredient_name, str):
+            ingredient_name = ingredient_name.strip().lower()
+            ingredient, _ = Ingredient.objects.get_or_create(name=ingredient_name)
+            instance.ingredient = ingredient
+        else:
+            instance.ingredient = validated_data.get("ingredient", instance.ingredient)
+
+        instance.amount = validated_data.get("amount", instance.amount)
+        instance.unit = validated_data.get("unit", instance.unit)
+        instance.save()
+        return instance

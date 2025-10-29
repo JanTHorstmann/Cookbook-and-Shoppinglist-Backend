@@ -5,6 +5,7 @@ from django.urls import reverse
 from django.contrib.auth import get_user_model
 from rest_framework import status
 from modules.cookbook.ingredients.models import Ingredient
+from modules.shoppinglists.shoppinglistitem.serializers import ShoppingListItemSerializer
 
 User = get_user_model()
 
@@ -277,9 +278,10 @@ class ShoppingListEditTests(BaseShoppingListSetup):
         "unit": "Gramm",
         "shopping_list": self.list_user1.id
         }
-
         response = self.client.patch(self.shopping_list_user1_detail_url, data, format="json")
+
         self.assertEqual(response.status_code, status.HTTP_200_OK)
+
 
     def test_participant_can_edit_items(self):
         self.client.force_authenticate(user=self.user2)
@@ -290,6 +292,108 @@ class ShoppingListEditTests(BaseShoppingListSetup):
         "unit": "Gramm",
         "shopping_list": self.list_user1.id
         }
+        response = self.client.patch(self.shopping_list_user1_detail_url, data, format="json")
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+
+    def test_non_participant_and_non_author_can_not_edit_items(self):
+        self.client.force_authenticate(user=self.user3)
+
+        data = {
+        "ingredient": "tomaten",
+        "amount": 6,
+        "unit": "Gramm",
+        "shopping_list": self.list_user1.id
+        }
 
         response = self.client.patch(self.shopping_list_user1_detail_url, data, format="json")
-        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+        self.assertEqual(response.data['detail'], "You do not have permission to edit this item.")
+
+class ShoppingListDeleteTests(BaseShoppingListSetup):
+
+    def test_author_can_delete_item(self):
+        self.client.force_authenticate(user=self.user1)
+
+        data = {
+        "ingredient": "Nudeln",
+        "amount": 500,
+        "unit": "Gramm",
+        "shopping_list": self.list_user1.id
+        }
+        response_post = self.client.post(self.shopping_list_url, data, format="json")
+
+        self.assertEqual(response_post.status_code, status.HTTP_201_CREATED)
+        delete_id = response_post.data["id"]
+
+        url = f"/api/shoppinglistitem/{delete_id}/"
+        response_delete = self.client.delete(url)
+
+        self.assertEqual(response_delete.status_code, 204)
+        self.assertFalse(ShoppingListItem.objects.filter(id=delete_id).exists())
+
+
+    def test_participant_can_delete_item(self):
+        self.client.force_authenticate(user=self.user2)
+
+        data = {
+        "ingredient": "Nudeln",
+        "amount": 500,
+        "unit": "Gramm",
+        "shopping_list": self.list_user1.id
+        }
+        response_post = self.client.post(self.shopping_list_url, data, format="json")
+
+        self.assertEqual(response_post.status_code, status.HTTP_201_CREATED)
+        delete_id = response_post.data["id"]
+
+        url = f"/api/shoppinglistitem/{delete_id}/"
+        response_delete = self.client.delete(url)
+
+        self.assertEqual(response_delete.status_code, 204)
+        self.assertFalse(ShoppingListItem.objects.filter(id=delete_id).exists())
+
+class ShoppingListItemSerializerTests(APITestCase):
+    def setUp(self):
+        self.user = User.objects.create_user(email="user@test.com", password="123456")
+        self.list = ListCollection.objects.create(name="Testlist", author=self.user)
+        self.ingredient = Ingredient.objects.create(name="apfel")
+
+    def test_serializer_returns_instance(self):
+        data = {
+            "ingredient": self.ingredient.name,
+            "amount": 2,
+            "unit": "kg",
+            "shopping_list": self.list.id
+        }
+        serializer = ShoppingListItemSerializer(data=data)
+        self.assertTrue(serializer.is_valid(), serializer.errors)
+        item = serializer.save()
+        self.assertIsInstance(item, ShoppingListItem)
+
+
+    def test_serializer_does_not_create_duplicate(self):
+        data1 = {
+            "ingredient": self.ingredient.name,
+            "amount": 2,
+            "unit": "kg",
+            "shopping_list": self.list.id
+        }
+        serializer1 = ShoppingListItemSerializer(data=data1)
+        self.assertTrue(serializer1.is_valid(), serializer1.errors)
+        item1 = serializer1.save()
+
+        data2 = {
+            "ingredient": self.ingredient.name,
+            "amount": 3,
+            "unit": "kg",
+            "shopping_list": self.list.id
+        }
+        serializer2 = ShoppingListItemSerializer(data=data2)
+        self.assertTrue(serializer2.is_valid(), serializer2.errors)
+        item2 = serializer2.save()
+
+        self.assertEqual(item1.id, item2.id)
+        self.assertEqual(item2.amount, 5)

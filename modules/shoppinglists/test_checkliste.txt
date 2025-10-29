@@ -15,9 +15,9 @@
 - Ungültige Daten (z. B. fehlende `amount` oder `unit`) führen zu Status 400.                                       # Done
 
 ✏️ **PATCH / PUT / DELETE (Bearbeiten & Löschen)**
-- Der Autor kann Items bearbeiten und löschen.
-- Teilnehmer dürfen Items nicht bearbeiten oder löschen.
-- Fremde Benutzer haben keinen Zugriff.
+- Der Autor kann Items bearbeiten und löschen.                                                                      # Done
+- Teilnehmer dürfen Items nicht bearbeiten oder löschen.                                                            # Done
+- Fremde Benutzer haben keinen Zugriff.                                                                             # Done
 
 ⚙️ **Serializer-Verhalten**
 - Ingredient-Namen werden automatisch in Kleinbuchstaben gespeichert.

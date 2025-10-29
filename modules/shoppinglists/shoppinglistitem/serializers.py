@@ -7,7 +7,7 @@ class ShoppingListItemSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = ShoppingListItem
-        fields = ["ingredient", "amount", "unit", "shopping_list"]
+        fields = ["id", "ingredient", "amount", "unit", "shopping_list"]
 
     def create(self, validated_data):
         ingredient_name = validated_data["ingredient"].strip().lower()

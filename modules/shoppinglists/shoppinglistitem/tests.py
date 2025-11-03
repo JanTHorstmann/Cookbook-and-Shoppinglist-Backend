@@ -270,6 +270,9 @@ class ShoppingListPostTests(BaseShoppingListSetup):
 class ShoppingListEditTests(BaseShoppingListSetup):
 
     def test_author_can_edit_items(self):
+        """
+        The author of a shopping list can successfully edit an item in their list.
+        """
         self.client.force_authenticate(user=self.user1)
 
         data = {
@@ -284,6 +287,9 @@ class ShoppingListEditTests(BaseShoppingListSetup):
 
 
     def test_participant_can_edit_items(self):
+        """
+        A participant of a shopping list can successfully edit an item in the shared list.
+        """
         self.client.force_authenticate(user=self.user2)
 
         data = {
@@ -298,6 +304,9 @@ class ShoppingListEditTests(BaseShoppingListSetup):
 
 
     def test_non_participant_and_non_author_can_not_edit_items(self):
+        """
+        A user who is neither the author nor a participant cannot edit items in the list.
+        """
         self.client.force_authenticate(user=self.user3)
 
         data = {
@@ -315,6 +324,9 @@ class ShoppingListEditTests(BaseShoppingListSetup):
 class ShoppingListDeleteTests(BaseShoppingListSetup):
 
     def test_author_can_delete_item(self):
+        """
+        The author of a shopping list can successfully delete an item from their list.
+        """
         self.client.force_authenticate(user=self.user1)
 
         data = {
@@ -336,6 +348,9 @@ class ShoppingListDeleteTests(BaseShoppingListSetup):
 
 
     def test_participant_can_delete_item(self):
+        """
+        A participant of a shopping list can successfully delete an item from the shared list.
+        """
         self.client.force_authenticate(user=self.user2)
 
         data = {
@@ -356,12 +371,17 @@ class ShoppingListDeleteTests(BaseShoppingListSetup):
         self.assertFalse(ShoppingListItem.objects.filter(id=delete_id).exists())
 
 class ShoppingListItemSerializerTests(APITestCase):
+
     def setUp(self):
         self.user = User.objects.create_user(email="user@test.com", password="123456")
         self.list = ListCollection.objects.create(name="Testlist", author=self.user)
         self.ingredient = Ingredient.objects.create(name="apfel")
 
+
     def test_serializer_returns_instance(self):
+        """
+        The serializer should return a ShoppingListItem instance when valid data is provided.
+        """
         data = {
             "ingredient": self.ingredient.name,
             "amount": 2,
@@ -375,6 +395,10 @@ class ShoppingListItemSerializerTests(APITestCase):
 
 
     def test_serializer_does_not_create_duplicate(self):
+        """
+        The serializer should not create duplicates for the same ingredient and list, 
+        but instead sum up the amounts.
+        """
         data1 = {
             "ingredient": self.ingredient.name,
             "amount": 2,

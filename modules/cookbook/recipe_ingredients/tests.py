@@ -10,7 +10,7 @@ class RecipeIngredientTestCase(TestCase):
         self.ingredient = Ingredient.objects.create(name="Ei")
         self.recipe_ingredient = RecipeIngredient.objects.create(
             ingredient=self.ingredient,
-            amount=Decimal("1.00"),  # Angepasst für DecimalField
+            amount=Decimal("1.00"),
             unit="Stück"
         )
 

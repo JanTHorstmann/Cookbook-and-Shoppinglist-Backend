@@ -11,7 +11,7 @@ class RecipeSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Recipe
-        fields = ["id", "name", "instructions", "preparation_time", "difficulty", "author", "ingredients", "recipe_img"]
+        fields = ["id", "name", "instructions", "preparation_time", "difficulty", "category", "author", "ingredients", "recipe_img"]
 
     def create(self, validated_data):     
         from modules.cookbook.recipe_ingredients.models import RecipeIngredient   

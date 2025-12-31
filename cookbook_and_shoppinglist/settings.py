@@ -27,9 +27,19 @@ SECRET_KEY = 'django-insecure-#^m)eniu#_!yah3idz8*&!tmo4n(o69hc%6a=xlg1!71#x9o7y
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = [
+    'localhost',
+    '127.0.0.1',
+    ]
 
+CORS_ALLOWED_ORIGINS = [
+    'http://localhost:4200',
+    'http://127.0.0.1:4200'
+]
 
+CSRF_TRUSTED_ORIGINS = [
+    'http://localhost:4200',
+]
 # Application definition
 
 INSTALLED_APPS = [
@@ -49,6 +59,7 @@ INSTALLED_APPS = [
     'modules.cookbook.recipe',
     'modules.shoppinglists.shoppinglistitem',
     'modules.shoppinglists.listcollection',
+    'corsheaders',
 ]
 
 INSTALLED_APPS += [
@@ -61,6 +72,7 @@ AUTHENTICATION_BACKENDS = [
 ]
 
 MIDDLEWARE = [
+    'corsheaders.middleware.CorsMiddleware',
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',

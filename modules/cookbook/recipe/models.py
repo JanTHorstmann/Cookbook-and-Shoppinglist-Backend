@@ -23,6 +23,7 @@ class Recipe(models.Model):
     difficulty = models.CharField(max_length=10, choices=DIFFICULTY_CHOICES, default='easy')
     category = models.CharField(max_length=15, choices=CATEGORY_CHOICES, default='breakfast')
     author = models.ForeignKey(get_user_model(), on_delete=models.CASCADE)
+    portion = models.PositiveIntegerField(default=2)
     ingredients = models.ManyToManyField(RecipeIngredient)
     recipe_img = ResizedImageField(size=[500, 300],
         upload_to="images/recipes/",

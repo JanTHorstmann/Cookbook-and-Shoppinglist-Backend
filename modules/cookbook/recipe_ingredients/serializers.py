@@ -7,7 +7,7 @@ class RecipeIngredientSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = RecipeIngredient
-        fields = ["ingredient", "amount", "unit"]
+        fields = ["id", "ingredient", "amount", "unit"]
 
     def create(self, validated_data):
         ingredient_name = validated_data["ingredient"].strip().lower()

@@ -14,9 +14,17 @@ class FavoritesView(viewsets.ModelViewSet):
     serializer_class = FavoriteSerializer
     permission_classes = [IsAuthenticated]
 
-    def get_queryset(self, request):
+    def get_queryset(self):
         user = self.request.user
         return Favorite.objects.filter(user=user)
     
     def perform_create(self, serializer):
-        serializer.save(author=self.request.user)
+        serializer.save(user=self.request.user)
+
+    def destroy(self, request, *args, **kwargs):
+        instance = self.get_object()
+        self.perform_destroy(instance)
+        return Response(
+            {"detail": "Recipe removed from favorites"},
+            status=status.HTTP_200_OK
+        )

@@ -19,6 +19,10 @@ class Favorite(models.Model):
             )
         ]
 
+        indexes = [
+            models.Index(fields=["user", "recipe"]),
+        ]
+
     def __str__(self):
         return f"{self.user} ♥ {self.recipe}"
 

@@ -2,16 +2,31 @@ from rest_framework import serializers
 from .models import Recipe 
 from modules.cookbook.recipe_ingredients.serializers import RecipeIngredientSerializer
 from modules.cookbook.ingredients.models import Ingredient 
+from modules.cookbook.favorites.models import Favorite
 # from modules.cookbook.recipe_ingredients.models import RecipeIngredient 
 
 
 class RecipeSerializer(serializers.ModelSerializer):
+    # is_favorite = serializers.SerializerMethodField()
+    is_favorite = serializers.BooleanField(read_only=True)
     ingredients = RecipeIngredientSerializer(many=True)
     author = serializers.StringRelatedField(read_only=True)
 
     class Meta:
         model = Recipe
-        fields = ["id", "name", "instructions", "preparation_time", "difficulty", "category", "author", "portion", "ingredients", "recipe_img"]
+        fields = [
+            "id", 
+            "name", 
+            "instructions", 
+            "preparation_time", 
+            "difficulty",
+            "category", 
+            "author", 
+            "portion", 
+            "ingredients", 
+            "recipe_img", 
+            "is_favorite"
+            ]
 
     def create(self, validated_data):     
         from modules.cookbook.recipe_ingredients.models import RecipeIngredient   
@@ -41,3 +56,14 @@ class RecipeSerializer(serializers.ModelSerializer):
         representation = super().to_representation(instance)
         representation['name'] = instance.name.capitalize()
         return representation
+    
+    
+    # def get_is_favorite(self, obj):
+    #     request = self.context.get("request")
+    #     if not request or not request.user.is_authenticated:
+    #         return False
+
+    #     return Favorite.objects.filter(
+    #         user=request.user,
+    #         recipe=obj
+    #     ).exists()

@@ -61,6 +61,7 @@ INSTALLED_APPS = [
     'modules.shoppinglists.listcollection',
     'modules.cookbook.favorites',
     'modules.cookbook.mealplan',
+    'modules.cookbook.mealplanitem',
     'corsheaders',
 ]
 

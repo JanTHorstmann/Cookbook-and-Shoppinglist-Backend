@@ -56,14 +56,3 @@ class RecipeSerializer(serializers.ModelSerializer):
         representation = super().to_representation(instance)
         representation['name'] = instance.name.capitalize()
         return representation
-    
-    
-    # def get_is_favorite(self, obj):
-    #     request = self.context.get("request")
-    #     if not request or not request.user.is_authenticated:
-    #         return False
-
-    #     return Favorite.objects.filter(
-    #         user=request.user,
-    #         recipe=obj
-    #     ).exists()
